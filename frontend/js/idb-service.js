@@ -39,17 +39,21 @@ class IDBService {
         const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
             const restaurantStore = upgradeDB.createObjectStore('restaurants', {
                 keyPath: 'id',
+                autoIncrement: true,
             });
         });
 
         dbPromise.then((db) => {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
-            const val = store.get(id)
-            // val.is_favorite = String(bool);
-            store.put(val, id);
-            console.log(val, id)
-            // return tx.complete;
-        });
+            console.log(store)
+            store.get(id)
+                .then((val) => {
+                    console.log(val)
+                    console.log(id)
+                    store.put(val);
+                    return tx.complete;
+                })
+        })
     }
 }
