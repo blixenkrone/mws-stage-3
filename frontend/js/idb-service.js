@@ -10,19 +10,21 @@ class IDBService {
      * 3. offline site?: https: //developer.mozilla.org/en-US/docs/Web/API/NavigatorOnLine/Online_and_offline_events
      */
 
-    static insertRestaurantsToDB(restaurants) {
+    static getDBPromise() {
         // If db exists or create one
-        console.log('inserting to idb');
-        console.log(restaurants);
-
         const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
             const restaurantStore = upgradeDB.createObjectStore('restaurants', {
                 keyPath: 'id',
                 autoIncrement: true,
             });
-        });
+        })
+        return dbPromise;
+    }
 
-        dbPromise.then((db) => {
+    static insertRestaurantsToDB(restaurants) {
+        console.log('inserting to idb');
+        console.log(restaurants);
+        this.getDBPromise().then((db) => {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
             restaurants.forEach((restaurant) => {
@@ -38,14 +40,7 @@ class IDBService {
     }
 
     static instertSpecificRestaurantToDB(id, bool) {
-        const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
-            const restaurantStore = upgradeDB.createObjectStore('restaurants', {
-                keyPath: 'id',
-                autoIncrement: true,
-            });
-        });
-
-        dbPromise.then((db) => {
+        this.getDBPromise().then((db) => {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
             console.log(store)
@@ -55,6 +50,25 @@ class IDBService {
                         console.log(restaurant)
                         console.log(id)
                         store.put(restaurant);
+                        return tx.complete;
+                    }
+                })
+        })
+    }
+
+    static insertUserReviewToDB(id, body) {
+        id = parseInt(id);
+        this.getDBPromise().then((db) => {
+            const tx = db.transaction('restaurants', 'readwrite');
+            const store = tx.objectStore('restaurants');
+            let reviewVal = store.get(id)
+                .then((data) => {
+                    if (data) {
+                        data.reviews.push(body)
+                        console.log(body)
+                        console.log(data)
+                        console.log(id)
+                        store.put(data, id);
                         return tx.complete;
                     }
                 })
