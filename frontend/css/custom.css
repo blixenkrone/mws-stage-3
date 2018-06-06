@@ -1,0 +1,14 @@
+#user-actions {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#btn-fav,
+#btn-review {
+    padding: 1rem;
+    margin-right: 3rem;
+    font-size: 1.125rem;
+    border-radius: 6px;
+    background-color: #ff4064;
+    color: #FFFF;
+}

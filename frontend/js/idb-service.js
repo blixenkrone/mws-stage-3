@@ -18,6 +18,7 @@ class IDBService {
         const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
             const restaurantStore = upgradeDB.createObjectStore('restaurants', {
                 keyPath: 'id',
+                autoIncrement: true,
             });
         });
 
@@ -25,17 +26,18 @@ class IDBService {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
             restaurants.forEach((restaurant) => {
-                store.get(restaurant.id).then((indexRestaurant) => {
-                    if (JSON.stringify(restaurant) !== JSON.stringify(indexRestaurant)) {
-                        store.put(restaurant)
-                            .then(success => console.log(`Worked IDB updated restaurant: , ${restaurant}, ${success}`));
-                    }
-                });
+                store.get(restaurant.id)
+                    .then((indexRestaurant) => {
+                        if (JSON.stringify(restaurant) !== JSON.stringify(indexRestaurant)) {
+                            store.put(restaurant)
+                                .then(success => console.log(`Worked IDB updated restaurant: , ${restaurant}, ${success}`));
+                        }
+                    });
             });
         });
     }
 
-    static insertFavoriteResToDB(id, bool) {
+    static instertSpecificRestaurantToDB(id, bool) {
         const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
             const restaurantStore = upgradeDB.createObjectStore('restaurants', {
                 keyPath: 'id',
@@ -48,11 +50,13 @@ class IDBService {
             const store = tx.objectStore('restaurants');
             console.log(store)
             store.get(id)
-                .then((val) => {
-                    console.log(val)
-                    console.log(id)
-                    store.put(val);
-                    return tx.complete;
+                .then((restaurant) => {
+                    if (restaurant) {
+                        console.log(restaurant)
+                        console.log(id)
+                        store.put(restaurant);
+                        return tx.complete;
+                    }
                 })
         })
     }

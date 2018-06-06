@@ -65,15 +65,17 @@ class DBHelper {
   }
 
   static fetchFavoriteRestaurant(id, bool) {
-    bool = !bool;
-    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${bool}`, {
+    let isfavorite = !!bool;
+    isfavorite = bool ? false : true;
+    console.log(isfavorite)
+    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${isfavorite}`, {
         method: 'POST',
       })
       .then(res => res.json())
       .then((res) => {
         console.log(res)
-        IDBService.insertFavoriteResToDB(res.id, bool)
-        console.log(`posted fav. restaurant: ${id} ${bool}`)
+        IDBService.instertSpecificRestaurantToDB(res.id, isfavorite)
+        console.log(`posted fav. restaurant: ${id} - ${isfavorite}`)
       })
       .catch(err => console.log(err))
   }
@@ -110,6 +112,7 @@ class DBHelper {
     const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
       const restaurantStore = upgradeDB.createObjectStore('restaurants', {
         keyPath: 'id',
+        autoIncrement: true,
       });
     });
 
@@ -255,7 +258,6 @@ class DBHelper {
       updatedAt: parseInt(form.ddate.value),
       flag: form.dflag.value,
     };
-    event;
     // IDBHelper.idbPostReview(form.id.value, body);
     // location.reload();
   }

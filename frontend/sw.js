@@ -65,3 +65,22 @@ self.addEventListener('fetch', (event) => {
         })
         .catch(err => console.log(err)));
 });
+
+
+// Check if online or not
+self.addEventListener('load', () => {
+    const status = document.getElementById('status');
+    const log = document.getElementById('log');
+
+    const updateOnlineStatus = (event) => {
+        console.log(event)
+        const condition = navigator.onLine ? 'online' : 'offline';
+        status.className = condition;
+        status.innerHTML = condition.toUpperCase();
+        log.insertAdjacentHTML(`beforeend, Event: ${event.type} - Status: ${condition}`);
+    }
+    console.log(log)
+
+    window.addEventListener(`online: , ${updateOnlineStatus}`);
+    window.addEventListener(`offline, ${updateOnlineStatus}`);
+});
