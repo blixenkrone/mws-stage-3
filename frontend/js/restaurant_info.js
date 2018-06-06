@@ -110,7 +110,7 @@ fillCreateReviewField = (id = self.restaurant.id) => {
 
   const createform = document.createElement('form');
   createform.setAttribute('id', 'restoForm');
-  createform.setAttribute('onsubmit', `DBHelper.saveOfflineReview(event, this);`);
+  createform.setAttribute('onsubmit', `DBHelper.saveOfflineReview(event, this)`);
 
   const heading = document.createElement('h2');
   heading.innerHTML = 'Restaurant Review Form ';
@@ -162,6 +162,7 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   ratingelement.setAttribute('type', 'text');
   ratingelement.setAttribute('name', 'drating');
   ratingelement.setAttribute('placeholder', 'Please enter a number between 1 to 5');
+  // TODO: RegEx ^([1-9]|[12]\d|3[0-6])$ here
   ratingelement.setAttribute('aria-label', 'restaurant rating');
   createform.appendChild(ratingelement);
 

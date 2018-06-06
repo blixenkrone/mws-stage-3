@@ -12,3 +12,51 @@
     background-color: #ff4064;
     color: #FFFF;
 }
+
+#review-form-section {
+    max-width: 30rem;
+    padding: 2rem;
+}
+
+#review-form hr {
+    margin-top: -5px;
+}
+
+#review-form label {
+    display: block;
+    font-size: 16px;
+}
+
+#review-form input[type="text"] {
+    width: 100%;
+    margin-top: 10px;
+    margin-right: 10px;
+    height: 35px;
+    margin-bottom: 25px;
+    padding: 10px;
+    border: 1px solid #ff4064;
+}
+
+#review-form textarea {
+    width: 100%;
+    border: 1px solid #ff4064;
+    padding: 10px;
+    margin-bottom: 25px;
+    margin-top: 10px;
+    height: 100px;
+    resize: none;
+}
+
+#review-form input[type="submit"] {
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    width: 50%;
+    padding: 10px 45px;
+    background-color: #ff4064;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
