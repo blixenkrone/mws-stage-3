@@ -1,18 +1,18 @@
 let restaurant;
-var map;
+let map;
 
 /**
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
+  fetchRestaurantFromURL((error, fetchedRestaurant) => {
     if (error) { // Got an error!
       console.error(error);
     } else {
       self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
-        center: restaurant.latlng,
-        scrollwheel: false
+        center: fetchedRestaurant.latlng,
+        scrollwheel: false,
       });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
@@ -25,6 +25,7 @@ window.initMap = () => {
  */
 fetchRestaurantFromURL = (callback) => {
   if (self.restaurant) { // restaurant already fetched!
+    console.log(self.restaurant)
     callback(null, self.restaurant)
     return;
   }
@@ -35,12 +36,13 @@ fetchRestaurantFromURL = (callback) => {
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       self.restaurant = restaurant;
+      console.log(restaurant);
       if (!restaurant) {
         console.error(error);
         return;
       }
       fillRestaurantHTML();
-      callback(null, restaurant)
+      callback(null, restaurant);
     });
   }
 }
@@ -66,28 +68,51 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
+  // fill fav restaurant
+  fillFavRestaurantHTML();
   // fill reviews
   fillReviewsHTML();
 }
+
+/**
+ * Create restaurant add or remove favorite
+ */
+fillFavRestaurantHTML = (is_favorite = self.restaurant.is_favorite, id = self.restaurant.id) => {
+  const favoriteRes = document.getElementById('favorite-restaurant');
+  const btn = document.createElement('button');
+  // btn.setAttribute('id', 'btn-fav');
+
+  if (!is_favorite) {
+    console.log(is_favorite)
+    btn.innerHTML = 'Favorize <3';
+  } else {
+    console.log(is_favorite)
+    btn.innerHTML = 'Un-favorize </3';
+  }
+  btn.onclick = () => DBHelper.fetchFavoriteRestaurant(id, is_favorite);
+
+  favoriteRes.appendChild(btn);
+};
 
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
 fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
-  for (let key in operatingHours) {
-    const row = document.createElement('tr');
-    const day = document.createElement('td');
-    day.innerHTML = key;
-    row.appendChild(day);
+  for (const key in operatingHours) {
+    if (key) {
+      const row = document.createElement('tr');
+      const day = document.createElement('td');
+      day.innerHTML = key;
+      row.appendChild(day);
 
-    const time = document.createElement('td');
-    time.innerHTML = operatingHours[key];
-    row.appendChild(time);
-
-    hours.appendChild(row);
+      const time = document.createElement('td');
+      time.innerHTML = operatingHours[key];
+      row.appendChild(time);
+      hours.appendChild(row);
+    }
   }
-}
+};
 
 /**
  * Create all reviews HTML and add them to the webpage.
@@ -105,11 +130,11 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     return;
   }
   const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
+  reviews.forEach((review) => {
     ul.appendChild(createReviewHTML(review));
   });
   container.appendChild(ul);
-}
+};
 
 /**
  * Create review HTML and add it to the webpage.

@@ -1,5 +1,6 @@
 {
     "esversion": 6,
     "lastsemic": true,
-    "asi": true
+    "asi": true,
+    "moz": true
 }
