@@ -11,6 +11,7 @@ module.exports = {
         "no-restricted-syntax": 0,
         "no-restricted-globals": 0,
         "semi": 0,
-        "consistent-return": 0
+        "consistent-return": 0,
+        "no-unneeded-ternary": 0
     }
 };

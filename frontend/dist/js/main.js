@@ -1,17 +1,17 @@
 let restaurants, neighborhoods, cuisines;
-var map;
-var markers = [];
+const map;
+const markers = [];
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js', {
-    scope: './'
-  }) //link to the our service worker file; scope is the root directory
-  .then(registration => {
-    console.log('Service Worker Registered');
-  }) //if the registration was successful, return the registration details to the console
-  .catch(error => {
-    console.log('Service Worker Failed to Register', error);
-  }); //if there was an error, return the error to the console
+      scope: './',
+    })
+    .then((registration) => {
+      console.log('Service Worker Registered');
+    })
+    .catch((error) => {
+      console.log('Service Worker Failed to Register', error);
+    })
 }
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.

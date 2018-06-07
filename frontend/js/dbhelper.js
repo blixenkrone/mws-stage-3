@@ -1,7 +1,6 @@
 /**
  * Common database helper functions.
  */
-
 class DBHelper {
   /** ‡
    * TODO: Create toggleFavorite func
@@ -37,31 +36,23 @@ class DBHelper {
       });
   }
 
+  // Fetch it from client if offline;
+
   static fetchRestaurantsFromClient(callback) {
     console.log('fetching from local IDB!');
     if (!('indexedDB' in window)) {
       console.log('no db');
       return null;
     }
-    const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
-      const restaurantStore = upgradeDB.createObjectStore('restaurants', {
-        keyPath: 'id',
-      });
-    });
 
-    dbPromise.then((db) => {
-        const tx = db.transaction('restaurants');
-        const store = tx.objectStore('restaurants');
-        return store.getAll();
-      })
-      .then((restaurants) => {
-        if (restaurants) {
-          console.log('indexDB returned this data:');
-          console.log(restaurants);
-          callback(null, restaurants);
-          console.log('fetched from local IDB done');
-        }
-      });
+    IDBService.getAllIDBData().then((restaurants) => {
+      if (restaurants) {
+        console.log('indexDB returned this data:');
+        console.log(restaurants);
+        callback(null, restaurants);
+        console.log('fetched from local IDB done');
+      }
+    });
   }
 
   static fetchFavoriteRestaurant(id, bool) {
@@ -78,6 +69,51 @@ class DBHelper {
         console.log(`posted fav. restaurant: ${id} - ${isfavorite}`)
       })
       .catch(err => console.log(err))
+  }
+
+  static cacheOfflineReview(formData) {
+    const body = {
+      restaurant_id: formData.restaurant_id,
+      name: formData.name,
+      rating: formData.rating,
+      comments: formData.comments,
+    };
+    IDBService.insertUserReviewToDB(formData.id.value, body)
+      .then(console.log('yes! its posted'))
+  }
+
+  static postOfflineReview() {
+    console.log('Offline idb posting started');
+    IDBService.getAllIDBData().then((data) => {
+      const array = [];
+      data.forEach((restaurant) => {
+        console.log(restaurant)
+        restaurant.reviews.forEach((review) => {
+          if (review) {
+            array.push(review)
+            console.log(array);
+          }
+        })
+      })
+    })
+    array.forEach((restaurant) => {
+      console.log(restaurant)
+      const body = {
+        restaurant_id: restaurant.restaurant_id,
+        name: restaurant.name,
+        rating: restaurant.rating,
+        comments: restaurant.comments,
+      }
+      fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+        })
+        .then(res => res.json())
+        .then(console.log('review has been posted after offline session'))
+    })
   }
 
   /**

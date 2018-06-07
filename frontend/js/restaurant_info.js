@@ -180,7 +180,7 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   // submitelement.setAttribute('name', 'dsubmit');
   submitelement.setAttribute('value', 'Submit');
   createform.appendChild(submitelement);
-  submitelement.onclick = () => POSTFORM;
+  submitelement.onclick = () => DBHelper.cacheOfflineReview(this);
   formContainer.appendChild(createform);
 }
 

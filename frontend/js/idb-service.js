@@ -21,6 +21,14 @@ class IDBService {
         return dbPromise;
     }
 
+    static getAllIDBData() {
+        return this.getDBPromise().then((db) => {
+            const tx = db.transaction('restaurants');
+            const store = tx.objectStore('restaurants');
+            return store.getAll()
+        })
+    }
+
     static insertRestaurantsToDB(restaurants) {
         console.log('inserting to idb');
         console.log(restaurants);
@@ -34,9 +42,9 @@ class IDBService {
                             store.put(restaurant)
                                 .then(success => console.log(`Worked IDB updated restaurant: , ${restaurant}, ${success}`));
                         }
-                    });
-            });
-        });
+                    })
+            })
+        })
     }
 
     static instertSpecificRestaurantToDB(id, bool) {
@@ -56,12 +64,12 @@ class IDBService {
         })
     }
 
-    static insertUserReviewToDB(id, body) {
-        id = parseInt(id);
+    static insertUserReviewToDB(inputId, body) {
+        const id = parseInt(inputId);
         this.getDBPromise().then((db) => {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
-            let reviewVal = store.get(id)
+            store.get(id)
                 .then((data) => {
                     if (data) {
                         data.reviews.push(body)
@@ -74,4 +82,5 @@ class IDBService {
                 })
         })
     }
+
 }

@@ -25,9 +25,7 @@ const cacheData = [
 self.addEventListener('install', (event) => {
     console.log('Service Worker Installed');
     event.waitUntil(caches.open(cacheVersion)
-        .then((cache) => {
-            return cache.addAll(cacheData);
-        })
+        .then(cache => cache.addAll(cacheData))
         .catch(err => console.log(err)))
 });
 
@@ -40,7 +38,6 @@ self.addEventListener('activate', (event) => {
             return Promise.all(cacheVersions.map((thiscacheVersion) => {
                 if (thiscacheVersion !== cacheVersion) {
                     console.log('Removing the old cache');
-
                     return caches.delete(thiscacheVersion);
                 }
             }))
@@ -66,21 +63,27 @@ self.addEventListener('fetch', (event) => {
         .catch(err => console.log(err)));
 });
 
+self.addEventListener('sync', (event) => {
+    console.log(event)
+    if (event.tag === 'offline-sync') {
+        event.waitUntil(IDBService.postOfflineReview())
+    }
+})
 
 // Check if online or not
-self.addEventListener('load', () => {
-    const status = document.getElementById('status');
-    const log = document.getElementById('log');
+// self.addEventListener('load', () => {
+//     const status = document.getElementById('status');
+//     const log = document.getElementById('log');
 
-    const updateOnlineStatus = (event) => {
-        console.log(event)
-        const condition = navigator.onLine ? 'online' : 'offline';
-        status.className = condition;
-        status.innerHTML = condition.toUpperCase();
-        log.insertAdjacentHTML(`beforeend, Event: ${event.type} - Status: ${condition}`);
-    }
-    console.log(log)
+//     const updateOnlineStatus = (event) => {
+//         console.log(event)
+//         const condition = navigator.onLine ? 'online' : 'offline';
+//         status.className = condition;
+//         status.innerHTML = condition.toUpperCase();
+//         log.insertAdjacentHTML(`beforeend, Event: ${event.type} - Status: ${condition}`);
+//     }
+//     console.log(log)
 
-    window.addEventListener(`online: , ${updateOnlineStatus}`);
-    window.addEventListener(`offline, ${updateOnlineStatus}`);
-});
+//     window.addEventListener(`online: , ${updateOnlineStatus}`);
+//     window.addEventListener(`offline, ${updateOnlineStatus}`);
+// });
