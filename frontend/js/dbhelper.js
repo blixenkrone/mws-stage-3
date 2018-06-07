@@ -68,7 +68,7 @@ class DBHelper {
     let isfavorite = !!bool;
     isfavorite = bool ? false : true;
     console.log(isfavorite)
-    fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${isfavorite}`, {
+    fetch(`${DBHelper.DATABASE_URL}/${id}/?is_favorite=${isfavorite}`, {
         method: 'POST',
       })
       .then(res => res.json())

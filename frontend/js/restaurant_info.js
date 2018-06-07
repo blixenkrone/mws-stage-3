@@ -128,16 +128,9 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   hiddenRestaurantId.setAttribute('value', `${id}`);
   createform.appendChild(hiddenRestaurantId);
 
-  const hiddenReviewDate = document.createElement('input');
-  unixTime = Math.round(Date.now());
-  hiddenReviewDate.setAttribute('type', 'hidden');
-  hiddenReviewDate.setAttribute('name', 'ddate');
-  hiddenReviewDate.setAttribute('value', `${unixTime}`);
-  createform.appendChild(hiddenReviewDate);
-
   const hiddenFlag = document.createElement('input');
   hiddenFlag.setAttribute('type', 'hidden');
-  hiddenFlag.setAttribute('name', 'dflag');
+  // hiddenFlag.setAttribute('name', 'dflag');
   hiddenFlag.setAttribute('value', 'unsynced');
   createform.appendChild(hiddenFlag);
 
@@ -147,9 +140,9 @@ fillCreateReviewField = (id = self.restaurant.id) => {
 
   const inputelement = document.createElement('input');
   inputelement.setAttribute('type', 'text');
-  inputelement.setAttribute('name', 'dname');
-  inputelement.setAttribute('placeholder', 'eg. James Bond');
-  inputelement.setAttribute('aria-label', 'reviewer name');
+  // inputelement.setAttribute('name', 'dname');
+  inputelement.setAttribute('placeholder', 'Please type your name');
+  inputelement.setAttribute('aria-label', 'customer name');
   createform.appendChild(inputelement);
 
   createform.appendChild(linebreak);
@@ -160,10 +153,10 @@ fillCreateReviewField = (id = self.restaurant.id) => {
 
   const ratingelement = document.createElement('input');
   ratingelement.setAttribute('type', 'text');
-  ratingelement.setAttribute('name', 'drating');
-  ratingelement.setAttribute('placeholder', 'Please enter a number between 1 to 5');
+  // ratingelement.setAttribute('name', 'drating');
+  ratingelement.setAttribute('placeholder', 'Rate the restaurant from 1-5');
   // TODO: RegEx ^([1-9]|[12]\d|3[0-6])$ here
-  ratingelement.setAttribute('aria-label', 'restaurant rating');
+  ratingelement.setAttribute('aria-label', 'customer rating');
   createform.appendChild(ratingelement);
 
   const ratingbreak = document.createElement('br');
@@ -174,9 +167,9 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   createform.appendChild(reviewlabel);
 
   const texareaelement = document.createElement('textarea');
-  texareaelement.setAttribute('name', 'dreview');
-  texareaelement.setAttribute('placeholder', 'Please write your review');
-  texareaelement.setAttribute('aria-label', 'restaurant review');
+  // texareaelement.setAttribute('name', 'dreview');
+  texareaelement.setAttribute('placeholder', 'Input your review here');
+  texareaelement.setAttribute('aria-label', 'customer review');
   createform.appendChild(texareaelement);
 
   const reviewbreak = document.createElement('br');
@@ -184,10 +177,10 @@ fillCreateReviewField = (id = self.restaurant.id) => {
 
   const submitelement = document.createElement('input');
   submitelement.setAttribute('type', 'submit');
-  submitelement.setAttribute('name', 'dsubmit');
+  // submitelement.setAttribute('name', 'dsubmit');
   submitelement.setAttribute('value', 'Submit');
   createform.appendChild(submitelement);
-
+  submitelement.onclick = () => POSTFORM;
   formContainer.appendChild(createform);
 }
 
