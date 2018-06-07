@@ -107,13 +107,14 @@ class DBHelper {
       }
       fetch(`${DBHelper.DATABASE_URL}/reviews`, {
           method: 'POST',
-          body: JSON.stringify(data),
+          body: JSON.stringify(body),
           headers: {
             'Content-Type': 'application/json',
           },
         })
         .then(res => res.json())
         .then(console.log('review has been posted after offline session'))
+        .catch(err => console.log(err))
     })
   }
 

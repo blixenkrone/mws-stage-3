@@ -71,12 +71,10 @@ class IDBService {
             const store = tx.objectStore('restaurants');
             store.get(id)
                 .then((data) => {
-                    console.log(data)
                     if (data) {
-                        console.log(body)
+                        store.put(body)
                         console.log(data)
-                        console.log(id)
-                        store.put(data);
+                        console.log(store)
                         return tx.complete;
                     }
                 })
