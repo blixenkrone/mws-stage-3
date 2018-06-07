@@ -108,80 +108,71 @@ reviewEventListener = () => {
 fillCreateReviewField = (id = self.restaurant.id) => {
   const formContainer = document.getElementById('review-form');
 
-  const createform = document.createElement('form');
-  createform.setAttribute('id', 'restoForm');
-  createform.setAttribute('onsubmit', `DBHelper.saveOfflineReview(event, this)`);
+  const form = document.createElement('form');
+  form.setAttribute('id', 'restoForm');
+  form.setAttribute('onsubmit', `DBHelper.cacheOfflineReview(event, this)`);
 
-  const heading = document.createElement('h2');
-  heading.innerHTML = 'Restaurant Review Form ';
-  createform.appendChild(heading);
-
-  const line = document.createElement('hr');
-  createform.appendChild(line);
+  const h2 = document.createElement('h2');
+  h2.innerHTML = 'Restaurant Review Form ';
+  form.appendChild(h2);
 
   const linebreak = document.createElement('br');
-  createform.appendChild(linebreak);
+  form.appendChild(linebreak);
 
-  const hiddenRestaurantId = document.createElement('input');
-  hiddenRestaurantId.setAttribute('type', 'hidden');
-  hiddenRestaurantId.setAttribute('name', 'id');
-  hiddenRestaurantId.setAttribute('value', `${id}`);
-  createform.appendChild(hiddenRestaurantId);
-
-  const hiddenFlag = document.createElement('input');
-  hiddenFlag.setAttribute('type', 'hidden');
-  // hiddenFlag.setAttribute('name', 'dflag');
-  hiddenFlag.setAttribute('value', 'unsynced');
-  createform.appendChild(hiddenFlag);
+  const restaurantId = document.createElement('input');
+  restaurantId.setAttribute('type', 'hidden');
+  restaurantId.setAttribute('name', 'id');
+  restaurantId.setAttribute('value', `${id}`);
+  form.appendChild(restaurantId);
 
   const namelabel = document.createElement('label');
   namelabel.innerHTML = 'Name: ';
-  createform.appendChild(namelabel);
+  form.appendChild(namelabel);
 
   const inputelement = document.createElement('input');
   inputelement.setAttribute('type', 'text');
-  // inputelement.setAttribute('name', 'dname');
+  inputelement.setAttribute('name', 'userName');
   inputelement.setAttribute('placeholder', 'Please type your name');
   inputelement.setAttribute('aria-label', 'customer name');
-  createform.appendChild(inputelement);
+  form.appendChild(inputelement);
 
-  createform.appendChild(linebreak);
+  form.appendChild(linebreak);
 
   const ratinglabel = document.createElement('label');
   ratinglabel.innerHTML = 'Rating: ';
-  createform.appendChild(ratinglabel);
+  form.appendChild(ratinglabel);
 
   const ratingelement = document.createElement('input');
   ratingelement.setAttribute('type', 'text');
-  // ratingelement.setAttribute('name', 'drating');
+  ratingelement.setAttribute('name', 'rating');
   ratingelement.setAttribute('placeholder', 'Rate the restaurant from 1-5');
   // TODO: RegEx ^([1-9]|[12]\d|3[0-6])$ here
   ratingelement.setAttribute('aria-label', 'customer rating');
-  createform.appendChild(ratingelement);
+  form.appendChild(ratingelement);
 
   const ratingbreak = document.createElement('br');
-  createform.appendChild(ratingbreak);
+  form.appendChild(ratingbreak);
 
   const reviewlabel = document.createElement('label');
   reviewlabel.innerHTML = 'Review: ';
-  createform.appendChild(reviewlabel);
+  form.appendChild(reviewlabel);
 
   const texareaelement = document.createElement('textarea');
-  // texareaelement.setAttribute('name', 'dreview');
+  texareaelement.setAttribute('name', 'review');
   texareaelement.setAttribute('placeholder', 'Input your review here');
   texareaelement.setAttribute('aria-label', 'customer review');
-  createform.appendChild(texareaelement);
+  form.appendChild(texareaelement);
 
   const reviewbreak = document.createElement('br');
-  createform.appendChild(reviewbreak);
+  form.appendChild(reviewbreak);
 
   const submitelement = document.createElement('input');
   submitelement.setAttribute('type', 'submit');
-  // submitelement.setAttribute('name', 'dsubmit');
+  submitelement.setAttribute('name', 'dsubmit');
   submitelement.setAttribute('value', 'Submit');
-  createform.appendChild(submitelement);
-  submitelement.onclick = () => DBHelper.cacheOfflineReview(this);
-  formContainer.appendChild(createform);
+  form.appendChild(submitelement);
+  // submitelement.onclick = () => DBHelper.cacheOfflineReview(this);
+  formContainer.appendChild(form);
 }
 
 /**

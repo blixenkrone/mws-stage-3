@@ -66,7 +66,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('sync', (event) => {
     console.log(event)
     if (event.tag === 'offline-sync') {
-        event.waitUntil(IDBService.postOfflineReview())
+        // event.waitUntil(DBHelper.postOfflineReview());
     }
 })
 

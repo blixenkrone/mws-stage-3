@@ -12,13 +12,12 @@ class IDBService {
 
     static getDBPromise() {
         // If db exists or create one
-        const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
-            const restaurantStore = upgradeDB.createObjectStore('restaurants', {
+        return idb.open('restaurants', 1, (upgradeDB) => {
+            upgradeDB.createObjectStore('restaurants', {
                 keyPath: 'id',
                 autoIncrement: true,
             });
         })
-        return dbPromise;
     }
 
     static getAllIDBData() {
@@ -30,9 +29,8 @@ class IDBService {
     }
 
     static insertRestaurantsToDB(restaurants) {
-        console.log('inserting to idb');
-        console.log(restaurants);
         this.getDBPromise().then((db) => {
+            console.log('inserting to idb');
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
             restaurants.forEach((restaurant) => {
@@ -47,7 +45,7 @@ class IDBService {
         })
     }
 
-    static instertSpecificRestaurantToDB(id, bool) {
+    static instertSpecificRestaurantToDB(id) {
         this.getDBPromise().then((db) => {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
@@ -65,18 +63,20 @@ class IDBService {
     }
 
     static insertUserReviewToDB(inputId, body) {
+        console.log('insert review to DB with connection')
         const id = parseInt(inputId);
         this.getDBPromise().then((db) => {
+            console.log(id)
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
             store.get(id)
                 .then((data) => {
+                    console.log(data)
                     if (data) {
-                        data.reviews.push(body)
                         console.log(body)
                         console.log(data)
                         console.log(id)
-                        store.put(data, id);
+                        store.put(data);
                         return tx.complete;
                     }
                 })

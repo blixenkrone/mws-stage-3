@@ -23,7 +23,6 @@ class DBHelper {
       })
       .then(restaurants => restaurants.json())
       .then((restaurants) => {
-        console.log(restaurants);
         IDBService.insertRestaurantsToDB(restaurants);
         if (restaurants) {
           callback(null, restaurants);
@@ -60,26 +59,28 @@ class DBHelper {
     isfavorite = bool ? false : true;
     console.log(isfavorite)
     fetch(`${DBHelper.DATABASE_URL}/${id}/?is_favorite=${isfavorite}`, {
-        method: 'POST',
+        method: 'PUT',
       })
       .then(res => res.json())
       .then((res) => {
         console.log(res)
         IDBService.instertSpecificRestaurantToDB(res.id, isfavorite)
-        console.log(`posted fav. restaurant: ${id} - ${isfavorite}`)
+        console.log(`PUT fav. restaurant: ${id} - ${isfavorite}`)
       })
       .catch(err => console.log(err))
   }
 
-  static cacheOfflineReview(formData) {
+  static cacheOfflineReview(event, form) {
+    event.preventDefault();
     const body = {
-      restaurant_id: formData.restaurant_id,
-      name: formData.name,
-      rating: formData.rating,
-      comments: formData.comments,
+      restaurant_id: form.id.value,
+      name: form.userName.value,
+      rating: form.rating.value,
+      comments: form.review.value,
     };
-    IDBService.insertUserReviewToDB(formData.id.value, body)
-      .then(console.log('yes! its posted'))
+    console.log(body)
+    IDBService.insertUserReviewToDB(form.id.value, body);
+    // .catch(err => console.log(err))
   }
 
   static postOfflineReview() {
@@ -102,13 +103,13 @@ class DBHelper {
         restaurant_id: restaurant.restaurant_id,
         name: restaurant.name,
         rating: restaurant.rating,
-        comments: restaurant.comments,
+        comments: restaurant.review,
       }
       fetch(`${DBHelper.DATABASE_URL}/reviews`, {
           method: 'POST',
+          body: JSON.stringify(data),
           headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
         })
         .then(res => res.json())
@@ -283,19 +284,4 @@ class DBHelper {
     });
     return marker;
   }
-
-  static selectFavoriteRestaurant(event, form) {
-    event.preventDefault();
-    const body = {
-      restaurant_id: parseInt(form.id.value),
-      name: form.dname.value,
-      rating: parseInt(form.drating.value),
-      comments: form.dreview.value,
-      updatedAt: parseInt(form.ddate.value),
-      flag: form.dflag.value,
-    };
-    // IDBHelper.idbPostReview(form.id.value, body);
-    // location.reload();
-  }
-
 }
