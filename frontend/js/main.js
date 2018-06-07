@@ -15,13 +15,6 @@ if ('serviceWorker' in navigator) {
     .catch((error) => {
       console.log('Service Worker Failed to Register', error);
     });
-
-  navigator.serviceWorker.ready
-    .then((worker) => {
-      console.log(worker)
-      return worker.sync.register('offline-sync')
-        .then(console.log('Registered offline sync'))
-    })
 }
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.

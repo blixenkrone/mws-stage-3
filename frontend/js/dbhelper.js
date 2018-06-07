@@ -73,13 +73,13 @@ class DBHelper {
   static cacheOfflineReview(event, form) {
     event.preventDefault();
     const body = {
-      restaurant_id: form.id.value,
+      restaurant_id: parseInt(form.id.value),
       name: form.userName.value,
       rating: form.rating.value,
       comments: form.review.value,
     };
     console.log(body)
-    IDBService.insertUserReviewToDB(form.id.value, body);
+    IDBService.insertUserReviewToDB(body.restaurant_id, body);
     // .catch(err => console.log(err))
   }
 

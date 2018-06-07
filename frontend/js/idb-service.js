@@ -62,18 +62,18 @@ class IDBService {
         })
     }
 
-    static insertUserReviewToDB(inputId, body) {
+    static insertUserReviewToDB(id, body) {
         console.log('insert review to DB with connection')
-        const id = parseInt(inputId);
         this.getDBPromise().then((db) => {
-            console.log(id)
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
+            console.log(id)
             store.get(id)
-                .then((data) => {
-                    if (data) {
+                .then((restaurant) => {
+                    console.log(restaurant)
+                    if (restaurant) {
                         store.put(body)
-                        console.log(data)
+                        console.log(restaurant)
                         console.log(store)
                         return tx.complete;
                     }

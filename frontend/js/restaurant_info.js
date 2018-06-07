@@ -1,6 +1,23 @@
 let restaurant;
 let map;
 
+if ('serviceWorker' in navigator) {
+  console.log('starting SW sync')
+  navigator.serviceWorker.register('/sw.js', {
+    scope: './',
+  });
+  navigator.serviceWorker.ready
+    .then((worker) => {
+      console.log(worker)
+      if (document.getElementById('submit-form')) {
+        document.getElementById('submit-form').addEventListener('onsubmit', () => {
+          return worker.sync.register('offline-sync')
+            .then(console.log('Registered offline sync'))
+        })
+      }
+    })
+}
+
 /**
  * Initialize Google map, called from HTML.
  */
@@ -74,6 +91,8 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   fillReviewsHTML();
   // listen for review click
   reviewEventListener();
+  // register serviceworker
+  // registerSW();
 }
 
 /**
@@ -109,7 +128,7 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   const formContainer = document.getElementById('review-form');
 
   const form = document.createElement('form');
-  form.setAttribute('id', 'restoForm');
+  form.setAttribute('id', 'reviews-form');
   form.setAttribute('onsubmit', `DBHelper.cacheOfflineReview(event, this)`);
 
   const h2 = document.createElement('h2');
@@ -168,10 +187,11 @@ fillCreateReviewField = (id = self.restaurant.id) => {
 
   const submitelement = document.createElement('input');
   submitelement.setAttribute('type', 'submit');
-  submitelement.setAttribute('name', 'dsubmit');
+  submitelement.setAttribute('name', 'submit-form');
+  submitelement.setAttribute('id', 'submit-form');
   submitelement.setAttribute('value', 'Submit');
   form.appendChild(submitelement);
-  // submitelement.onclick = () => DBHelper.cacheOfflineReview(this);
+  // submitelement.onclick = () => DBHelper.cacheOfflineReview(event, this);
   formContainer.appendChild(form);
 }
 
