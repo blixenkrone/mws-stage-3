@@ -63,10 +63,17 @@ class IDBService {
     }
 
     static insertUserReviewToDB(id, body) {
+        const dbPromise = idb.open('reviews', 1, (upgradeDB) => {
+            upgradeDB.createObjectStore('reviews', {
+                keyPath: 'id',
+                autoIncrement: true,
+            });
+        })
+
         console.log('insert review to DB with connection')
-        this.getDBPromise().then((db) => {
-            const tx = db.transaction('restaurants', 'readwrite');
-            const store = tx.objectStore('restaurants');
+        dbPromise.then((db) => {
+            const tx = db.transaction('reviews', 'readwrite');
+            const store = tx.objectStore('reviews');
             console.log(id)
             store.get(id)
                 .then((restaurant) => {
@@ -80,5 +87,4 @@ class IDBService {
                 })
         })
     }
-
 }

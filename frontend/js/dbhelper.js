@@ -59,13 +59,13 @@ class DBHelper {
     isfavorite = bool ? false : true;
     console.log(isfavorite)
     fetch(`${DBHelper.DATABASE_URL}/${id}/?is_favorite=${isfavorite}`, {
-        method: 'PUT',
+        method: 'POST',
       })
       .then(res => res.json())
       .then((res) => {
         console.log(res)
         IDBService.instertSpecificRestaurantToDB(res.id, isfavorite)
-        console.log(`PUT fav. restaurant: ${id} - ${isfavorite}`)
+        console.log(`post fav. restaurant: ${id} - ${isfavorite}`)
       })
       .catch(err => console.log(err))
   }

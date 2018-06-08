@@ -1,3 +1,6 @@
+importScripts('/js/idb.js');
+importScripts('/js/dbhelper.js');
+
 const cacheVersion = 'v1';
 const cacheData = [
     './',
@@ -23,16 +26,17 @@ const cacheData = [
 
 // installing the service worker
 self.addEventListener('install', (event) => {
-    console.log('Service Worker Installed');
-    event.waitUntil(caches.open(cacheVersion)
-        .then(cache => cache.addAll(cacheData))
+    const dataToCache = cacheData;
+    return event.waitUntil(caches.open(cacheVersion)
+        .then(cache => cache.addAll(dataToCache))
         .catch(err => console.log(err)))
 });
 
 // activating the service worker
+
 self.addEventListener('activate', (event) => {
     console.log('Service Worker Activated');
-    event.waitUntil(caches.keys()
+    return event.waitUntil(caches.keys()
         .then((cacheVersions) => {
             // looping through everything in the cache
             return Promise.all(cacheVersions.map((thiscacheVersion) => {
@@ -45,23 +49,34 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    event.respondWith(caches.match(event.request)
-        .then((response) => {
-            if (response && response !== undefined) return response;
-            return fetch(event.request)
-                .then((response) => {
-                    const responseClone = response.clone();
-                    caches.open(cacheVersion)
-                        .then((cache) => {
-                            if (event.request !== 'POST') {
-                                cache.put(event.request, responseClone)
-                            }
-                        })
-                    return response;
-                })
-        })
-        .catch(err => console.log(err)));
+    event.respondWith(caches.match(event.request, {
+        ignoreSearch: true,
+    }).then((response) => {
+        if (response) return response;
+        return fetch(event.request);
+    }))
 });
+
+
+// self.addEventListener('fetch', (event) => {
+//     event.respondWith(caches.match(event.request)
+//         .then((response) => {
+//             if (response && response !== undefined) return response;
+//             return fetch(event.request)
+//                 .then((response) => {
+//                     console.log(response)
+//                     const responseClone = response.clone();
+//                     caches.open(cacheVersion)
+//                         .then((cache) => {
+//                             if (event.request !== 'POST') {
+//                                 cache.put(event.request, responseClone)
+//                             }
+//                         })
+//                     return response;
+//                 })
+//         })
+//         .catch(err => console.log(err)));
+// });
 
 self.addEventListener('sync', (event) => {
     console.log(event)
