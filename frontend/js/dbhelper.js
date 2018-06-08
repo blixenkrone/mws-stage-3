@@ -79,11 +79,11 @@ class DBHelper {
       comments: form.review.value,
     };
     console.log(body)
-    IDBService.insertUserReviewToDB(body.restaurant_id, body);
+    IDBService.insertOfflineUserReviewToDB(body.restaurant_id, body);
     // .catch(err => console.log(err))
   }
 
-  static postOfflineReview() {
+  static syncOfflineReviewUponConnection() {
     console.log('Offline idb posting started');
     IDBService.getAllIDBData().then((data) => {
       const array = [];

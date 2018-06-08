@@ -26,17 +26,15 @@ const cacheData = [
 
 // installing the service worker
 self.addEventListener('install', (event) => {
-    const dataToCache = cacheData;
-    return event.waitUntil(caches.open(cacheVersion)
-        .then(cache => cache.addAll(dataToCache))
+    event.waitUntil(caches.open(cacheVersion)
+        .then(cache => cache.addAll(cacheData))
         .catch(err => console.log(err)))
 });
 
 // activating the service worker
-
 self.addEventListener('activate', (event) => {
     console.log('Service Worker Activated');
-    return event.waitUntil(caches.keys()
+    event.waitUntil(caches.keys()
         .then((cacheVersions) => {
             // looping through everything in the cache
             return Promise.all(cacheVersions.map((thiscacheVersion) => {
@@ -49,14 +47,31 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    event.respondWith(caches.match(event.request, {
-        ignoreSearch: true,
-    }).then((response) => {
-        if (response) return response;
-        return fetch(event.request);
-    }))
+    event.respondWith(caches.match(event.request)
+        .then((response) => {
+            if (response && response !== undefined) return response;
+            return fetch(event.request)
+                .then((response) => {
+                    const responseClone = response.clone();
+                    caches.open(cacheVersion)
+                        .then((cache) => {
+                            if (event.request !== 'POST') {
+                                cache.put(event.request, responseClone)
+                            }
+                        })
+                    return response;
+                })
+        })
+        .catch(err => console.log(err)));
 });
 
+self.addEventListener('sync', (event) => {
+    console.log(event)
+    if (event.tag === 'offline-sync') {
+        console.log(event)
+        event.waitUntil(DBHelper.syncOfflineReviewUponConnection());
+    }
+})
 
 // self.addEventListener('fetch', (event) => {
 //     event.respondWith(caches.match(event.request)
@@ -78,12 +93,6 @@ self.addEventListener('fetch', (event) => {
 //         .catch(err => console.log(err)));
 // });
 
-self.addEventListener('sync', (event) => {
-    console.log(event)
-    if (event.tag === 'offline-sync') {
-        event.waitUntil(DBHelper.postOfflineReview());
-    }
-})
 
 // Check if online or not
 // self.addEventListener('load', () => {

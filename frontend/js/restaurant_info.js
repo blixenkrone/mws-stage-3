@@ -1,23 +1,6 @@
 let restaurant;
 let map;
 
-if ('serviceWorker' in navigator) {
-  console.log('starting SW sync')
-  navigator.serviceWorker.register('/sw.js', {
-    scope: './',
-  });
-  navigator.serviceWorker.ready
-    .then((worker) => {
-      console.log(worker)
-      if (document.getElementById('submit-form')) {
-        document.getElementById('submit-form').addEventListener('onsubmit', () => {
-          return worker.sync.register('offline-sync')
-            .then(console.log('Registered offline sync'))
-        })
-      }
-    })
-}
-
 /**
  * Initialize Google map, called from HTML.
  */
@@ -124,12 +107,25 @@ reviewEventListener = () => {
   btn.onclick = () => fillCreateReviewField();
 };
 
+getSWofflineSync = () => {
+  navigator.serviceWorker.register('/sw.js', {
+    scope: './',
+  }).then((worker) => {
+    console.log('starting SW sync')
+    document.getElementById('reviewform').addEventListener('submit', () => {
+      console.log(worker)
+      return worker.sync.register('offline-sync');
+    })
+  })
+}
+
 fillCreateReviewField = (id = self.restaurant.id) => {
+
   const formContainer = document.getElementById('review-form');
 
   const form = document.createElement('form');
-  form.setAttribute('id', 'reviews-form');
-  form.setAttribute('onsubmit', `DBHelper.cacheOfflineReview(event, this)`);
+  form.setAttribute('id', 'reviewform');
+  form.setAttribute('onsubmit', `DBHelper.syncOfflineReviewUponConnection(event, this)`);
 
   const h2 = document.createElement('h2');
   h2.innerHTML = 'Restaurant Review Form ';
@@ -193,6 +189,8 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   form.appendChild(submitelement);
   // submitelement.onclick = () => DBHelper.cacheOfflineReview(event, this);
   formContainer.appendChild(form);
+
+  getSWofflineSync();
 }
 
 /**

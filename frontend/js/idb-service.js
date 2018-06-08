@@ -70,21 +70,30 @@ class IDBService {
             });
         })
 
-        console.log('insert review to DB with connection')
+        console.log('insert review to DB an online connection')
         dbPromise.then((db) => {
-            const tx = db.transaction('reviews', 'readwrite');
-            const store = tx.objectStore('reviews');
+            const tx = db.transaction('sync-reviews', 'readwrite');
+            const store = tx.objectStore('sync-reviews');
             console.log(id)
-            store.get(id)
-                .then((restaurant) => {
-                    console.log(restaurant)
-                    if (restaurant) {
-                        store.put(body)
-                        console.log(restaurant)
-                        console.log(store)
-                        return tx.complete;
-                    }
-                })
+            store.put(body)
+                .then(success => console.log(`Reviews , ${restaurant}, ${success}`));
+        })
+    }
+
+    static insertOfflineUserReviewToDB(id, body) {
+        const dbPromise = idb.open('sync-reviews', 1, (upgradeDB) => {
+            upgradeDB.createObjectStore('sync-reviews', {
+                keyPath: 'id',
+                autoIncrement: true,
+            });
+        })
+        console.log('insert review to DB a user without connection')
+        dbPromise.then((db) => {
+            const tx = db.transaction('sync-reviews', 'readwrite');
+            const store = tx.objectStore('sync-reviews');
+            console.log(id)
+            store.put(body)
+                .then(success => console.log(`Reviews , ${restaurant}, ${success}`));
         })
     }
 }
