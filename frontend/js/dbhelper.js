@@ -151,7 +151,6 @@ class DBHelper {
       .then(res => res.json())
       .catch(err => console.log(err))
       .then(response => console.log('Success', response))
-      .then(res => DBHelper.insertReviewsFromAPI(form.id.value))
   }
 
   static syncOfflineReviewUponConnection() {
