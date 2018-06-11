@@ -9,6 +9,10 @@ class DBHelper {
 
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
+    return `http://localhost:${port}`;
+  }
+  static get RESTAURANT_URL() {
+    const port = 1337; // Change this to your server port
     return `http://localhost:${port}/restaurants`;
   }
 
@@ -16,9 +20,9 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    console.log(`Fetching restaurants as ${DBHelper.DATABASE_URL}`);
+    console.log(`Fetching restaurants as ${DBHelper.RESTAURANT_URL}`);
 
-    fetch(DBHelper.DATABASE_URL, {
+    fetch(DBHelper.RESTAURANT_URL, {
         method: 'GET',
       })
       .then(restaurants => restaurants.json())
@@ -58,7 +62,7 @@ class DBHelper {
     let isfavorite = !!bool;
     isfavorite = bool ? false : true;
     console.log(isfavorite)
-    fetch(`${DBHelper.DATABASE_URL}/${id}/?is_favorite=${isfavorite}`, {
+    return fetch(`${DBHelper.RESTAURANT_URL}/${id}/?is_favorite=${isfavorite}`, {
         method: 'POST',
       })
       .then(res => res.json())
@@ -83,20 +87,44 @@ class DBHelper {
     // .catch(err => console.log(err))
   }
 
+  static postReview(event, form) {
+    event.preventDefault();
+    const body = {
+      restaurant_id: parseInt(form.id.value),
+      name: form.userName.value,
+      rating: form.rating.value,
+      comments: form.review.value,
+    };
+    console.log(body);
+    IDBService.insertUserReviewToDB(form.id.value, body);
+
+    return fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(res => res.json())
+      .catch(err => console.log(err))
+      .then(response => console.log('Success', response))
+  }
+
   static syncOfflineReviewUponConnection() {
     console.log('Offline idb posting started');
-    IDBService.getAllIDBData().then((data) => {
-      const array = [];
-      data.forEach((restaurant) => {
-        console.log(restaurant)
-        restaurant.reviews.forEach((review) => {
-          if (review) {
-            array.push(review)
-            console.log(array);
-          }
+    IDBService.getAllIDBData()
+      .then((data) => {
+        const array = [];
+        data.forEach((restaurant) => {
+          console.log(restaurant)
+          restaurant.reviews.forEach((review) => {
+            if (review) {
+              array.push(review)
+              console.log(array);
+            }
+          })
         })
       })
-    })
     array.forEach((restaurant) => {
       console.log(restaurant)
       const body = {
@@ -105,7 +133,7 @@ class DBHelper {
         rating: restaurant.rating,
         comments: restaurant.review,
       }
-      fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+      fetch(`${DBHelper.RESTAURANT_URL}/reviews`, {
           method: 'POST',
           body: JSON.stringify(body),
           headers: {
@@ -123,8 +151,8 @@ class DBHelper {
    */
 
   static fetchRestaurantById(id, callback) {
-    console.log(`Fetching restaurants as ${DBHelper.DATABASE_URL}`);
-    fetch(`${DBHelper.DATABASE_URL}/${id}`, {
+    console.log(`Fetching restaurants as ${DBHelper.RESTAURANT_URL}`);
+    fetch(`${DBHelper.RESTAURANT_URL}/${id}`, {
         method: 'GET',
       })
       .then(response => response.json())

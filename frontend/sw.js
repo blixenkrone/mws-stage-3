@@ -47,19 +47,20 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    event.respondWith(caches.match(event.request)
-        .then((response) => {
-            if (response && response !== undefined) return response;
+    // console.log(`method: ${event.request.method} and url:  ${event.request.url}`);
+    return event.respondWith(caches.match(event.request)
+        .then((match) => {
+            if (match && match !== undefined) return match;
             return fetch(event.request)
                 .then((response) => {
                     const responseClone = response.clone();
-                    caches.open(cacheVersion)
+                    return caches.open(cacheVersion)
                         .then((cache) => {
-                            if (event.request !== 'POST') {
+                            if (event.request.method !== 'POST') {
                                 cache.put(event.request, responseClone)
                             }
                         })
-                    return response;
+                        .catch(err => console.log(err))
                 })
         })
         .catch(err => console.log(err)));
@@ -69,7 +70,7 @@ self.addEventListener('sync', (event) => {
     console.log(event)
     if (event.tag === 'offline-sync') {
         console.log(event)
-        event.waitUntil(DBHelper.syncOfflineReviewUponConnection());
+        // event.waitUntil(DBHelper.syncOfflineReviewUponConnection());
     }
 })
 

@@ -16,6 +16,13 @@ if ('serviceWorker' in navigator) {
       console.log('Service Worker Failed to Register', error);
     });
 }
+
+window.addEventListener('online', (event) => {
+  // syncOfflineReview();
+  console.log(event)
+  syncOfflineReviewUponConnection();
+})
+
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */

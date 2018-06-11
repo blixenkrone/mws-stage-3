@@ -22,9 +22,9 @@ class IDBService {
 
     static getAllIDBData() {
         return this.getDBPromise().then((db) => {
-            const tx = db.transaction('restaurants');
-            const store = tx.objectStore('restaurants');
-            return store.getAll()
+            return db.transaction('restaurants')
+                .objectStore('restaurants')
+                .getAll();
         })
     }
 
@@ -72,8 +72,8 @@ class IDBService {
 
         console.log('insert review to DB an online connection')
         dbPromise.then((db) => {
-            const tx = db.transaction('sync-reviews', 'readwrite');
-            const store = tx.objectStore('sync-reviews');
+            const tx = db.transaction('reviews', 'readwrite');
+            const store = tx.objectStore('reviews');
             console.log(id)
             store.put(body)
                 .then(success => console.log(`Reviews , ${restaurant}, ${success}`));

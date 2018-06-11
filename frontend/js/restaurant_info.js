@@ -125,7 +125,7 @@ fillCreateReviewField = (id = self.restaurant.id) => {
 
   const form = document.createElement('form');
   form.setAttribute('id', 'reviewform');
-  form.setAttribute('onsubmit', `DBHelper.syncOfflineReviewUponConnection(event, this)`);
+  form.setAttribute('onsubmit', `DBHelper.postReview(event, this)`);
 
   const h2 = document.createElement('h2');
   h2.innerHTML = 'Restaurant Review Form ';
