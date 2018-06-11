@@ -60,6 +60,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img'
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.alt = `This is ${restaurant.name}`
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -71,7 +72,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   // fill fav restaurant
   fillFavRestaurantHTML();
   // fill reviews
-  fillReviewsHTML();
+  setTimeout(() => {
+    fillReviewsHTML();
+  }, 3000)
   // listen for review click
   reviewEventListener();
   // register serviceworker
@@ -217,6 +220,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+  console.log(reviews)
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';

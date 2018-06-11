@@ -21,11 +21,48 @@ class IDBService {
     }
 
     static getAllIDBData() {
-        return this.getDBPromise().then((db) => {
+        this.getDBPromise().then((db) => {
             return db.transaction('restaurants')
                 .objectStore('restaurants')
                 .getAll();
         })
+    }
+
+    static deleteOldDatabase() {
+        const DBDeleted = window.indexedDB.deleteDatabase('restaurants');
+        DBDeleted.onerror = (e) => {
+            console.log(e);
+        };
+        DBDeleted.onsuccess = (e) => {
+            console.log(e);
+        };
+    }
+
+    /**
+     * Populate restaurants data including reviews
+     */
+    static fetchReviews(restaurant, dbPromise) {
+        const id = restaurant.id;
+        fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`)
+            .then(res => res.json())
+            .then(res => console.log(res))
+            .then(restaurantReviews => dbPromise
+                .then((db) => {
+                    const tx = db.transaction('restaurants', 'readwrite');
+                    const store = tx.objectStore('restaurants');
+                    const item = restaurant;
+                    item.reviews = restaurantReviews;
+                    store.put(item);
+                    return tx.complete;
+                }))
+    }
+
+    static fetchReviewsFromId(id) {
+        console.log(id)
+        fetch(`${DBHelper.DATABASE_URL}/reviews/?restaurant_id=${id}`)
+            .then(res => res.json())
+            .then(res => console.log(res))
+            .catch(err => console.log(err))
     }
 
     static insertRestaurantsToDB(restaurants) {

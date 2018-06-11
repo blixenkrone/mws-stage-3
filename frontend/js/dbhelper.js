@@ -36,7 +36,50 @@ class DBHelper {
         console.log(err);
         // Fetch from indexdb incase network is not available
         DBHelper.fetchRestaurantsFromClient(callback);
+      })
+  }
+
+  /**
+   * Fetch a restaurant by its ID.
+   */
+
+  static fetchRestaurantById(id, callback) {
+    console.log(`Fetching restaurants as ${DBHelper.RESTAURANT_URL}`);
+    fetch(`${DBHelper.RESTAURANT_URL}/${id}`, {
+        method: 'GET',
+      })
+      .then(response => response.json())
+      .then((restaurant) => {
+        if (restaurant) {
+          callback(null, restaurant);
+          console.log(restaurant)
+          this.populateRestaurantsWithReviews(id, restaurant);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        // Fetch from indexdb incase network is not available
+        DBHelper.fetchRestaurantsByIdFromClient(id)
+          .then(restaurant => callback(null, restaurant));
       });
+  }
+
+  static populateRestaurantsWithReviews(id, restaurant) {
+    console.log(restaurant)
+    console.log(id)
+    parseInt(id)
+    fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`)
+      .then(res => res.json())
+      .then((restaurantReviews) => {
+        IDBService.getDBPromise().then((db) => {
+          const tx = db.transaction('restaurants', 'readwrite');
+          const store = tx.objectStore('restaurants');
+          const item = restaurant;
+          item.reviews = restaurantReviews;
+          store.put(item);
+          return tx.complete;
+        })
+      })
   }
 
   // Fetch it from client if offline;
@@ -47,15 +90,15 @@ class DBHelper {
       console.log('no db');
       return null;
     }
-
-    IDBService.getAllIDBData().then((restaurants) => {
-      if (restaurants) {
-        console.log('indexDB returned this data:');
-        console.log(restaurants);
-        callback(null, restaurants);
-        console.log('fetched from local IDB done');
-      }
-    });
+    IDBService.getAllIDBData()
+      .then((restaurants) => {
+        if (restaurants) {
+          console.log('indexDB returned this data:');
+          console.log(restaurants);
+          callback(null, restaurants);
+          console.log('fetched from local IDB done');
+        }
+      });
   }
 
   static fetchFavoriteRestaurant(id, bool) {
@@ -108,6 +151,7 @@ class DBHelper {
       .then(res => res.json())
       .catch(err => console.log(err))
       .then(response => console.log('Success', response))
+      .then(res => DBHelper.insertReviewsFromAPI(form.id.value))
   }
 
   static syncOfflineReviewUponConnection() {
@@ -146,28 +190,6 @@ class DBHelper {
     })
   }
 
-  /**
-   * Fetch a restaurant by its ID.
-   */
-
-  static fetchRestaurantById(id, callback) {
-    console.log(`Fetching restaurants as ${DBHelper.RESTAURANT_URL}`);
-    fetch(`${DBHelper.RESTAURANT_URL}/${id}`, {
-        method: 'GET',
-      })
-      .then(response => response.json())
-      .then((restaurant) => {
-        if (restaurant) {
-          callback(null, restaurant);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        // Fetch from indexdb incase network is not available
-        DBHelper.fetchRestaurantsByIdFromClient(id)
-          .then(restaurant => callback(null, restaurant));
-      });
-  }
 
   static fetchRestaurantsByIdFromClient(id) {
     console.log('fetching from local IDB!');
