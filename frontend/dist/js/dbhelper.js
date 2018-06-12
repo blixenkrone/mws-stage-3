@@ -1,52 +1,31 @@
 /**
  * Common database helper functions.
  */
-
 class DBHelper {
-
-  /**
-   * Database URL.*/
+  /** ‡
+   * TODO: Create toggleFavorite func
+   * TODO: Create a body to post to indexDB if offline
+   * */
 
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
+    return `http://localhost:${port}`;
   }
-
-  static insertRestaurantsToDB(restaurants) {
-    // If db exists or create one
-    console.log('inserting to db');
-    console.log(restaurants);
-
-    const dbPromise = idb.open('restaurants', 1, upgradeDB => {
-      const restaurantStore = upgradeDB.createObjectStore('restaurants', {
-        keyPath: 'id'
-      });
-    });
-
-    dbPromise.then(db => {
-      let tx = db.transaction('restaurants', 'readwrite');
-      let store = tx.objectStore('restaurants');
-      restaurants.forEach(restaurant => {
-        store.get(restaurant.id).then(idbRestaurant => {
-          if (JSON.stringify(restaurant) !== JSON.stringify(idbRestaurant)) {
-            store.put(restaurant).then(restaurant => console.log('Worker IDB: Restaurant updated', restaurant));
-          }
-        });
-      });
-    });
+  static get RESTAURANT_URL() {
+    const port = 1337; // Change this to your server port
+    return `http://localhost:${port}/restaurants`;
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    console.log(`Fetching restaurants as ${DBHelper.DATABASE_URL}`);
+    console.log(`Fetching restaurants as ${DBHelper.RESTAURANT_URL}`);
 
-    fetch(DBHelper.DATABASE_URL, {
+    fetch(DBHelper.RESTAURANT_URL, {
       method: 'GET'
-    }).then(restaurants => restaurants = restaurants.json()).then(restaurants => {
-      console.log(restaurants);
-      this.insertRestaurantsToDB(restaurants);
+    }).then(restaurants => restaurants.json()).then(restaurants => {
+      IDBService.insertRestaurantsToDB(restaurants);
       if (restaurants) {
         callback(null, restaurants);
       }
@@ -57,23 +36,52 @@ class DBHelper {
     });
   }
 
+  /**
+   * Fetch a restaurant by its ID.
+   */
+
+  static fetchRestaurantById(id, callback) {
+    console.log(`Fetching restaurants as ${DBHelper.RESTAURANT_URL}`);
+    fetch(`${DBHelper.RESTAURANT_URL}/${id}`, {
+      method: 'GET'
+    }).then(response => response.json()).then(restaurant => {
+      if (restaurant) {
+        callback(null, restaurant);
+        console.log(restaurant);
+        this.populateRestaurantsWithReviews(id, restaurant);
+      }
+    }).catch(err => {
+      console.log(err);
+      // Fetch from indexdb incase network is not available
+      DBHelper.fetchRestaurantsByIdFromClient(id).then(restaurant => callback(null, restaurant));
+    });
+  }
+
+  static populateRestaurantsWithReviews(id, restaurant) {
+    console.log(restaurant);
+    console.log(id);
+    parseInt(id);
+    fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`).then(res => res.json()).then(restaurantReviews => {
+      IDBService.getDBPromise().then(db => {
+        const tx = db.transaction('restaurants', 'readwrite');
+        const store = tx.objectStore('restaurants');
+        const item = restaurant;
+        item.reviews = restaurantReviews;
+        store.put(item);
+        return tx.complete;
+      });
+    });
+  }
+
+  // Fetch it from client if offline;
+
   static fetchRestaurantsFromClient(callback) {
     console.log('fetching from local IDB!');
     if (!('indexedDB' in window)) {
       console.log('no db');
       return null;
     }
-    const dbPromise = idb.open('restaurants', 1, upgradeDB => {
-      const restaurantStore = upgradeDB.createObjectStore('restaurants', {
-        keyPath: 'id'
-      });
-    });
-
-    dbPromise.then(db => {
-      let tx = db.transaction('restaurants');
-      let store = tx.objectStore('restaurants');
-      return store.getAll();
-    }).then(restaurants => {
+    IDBService.getAllIDBData().then(restaurants => {
       if (restaurants) {
         console.log('indexDB returned this data:');
         console.log(restaurants);
@@ -83,22 +91,83 @@ class DBHelper {
     });
   }
 
-  /**
-   * Fetch a restaurant by its ID.
-   */
+  static fetchFavoriteRestaurant(id, bool) {
+    let isfavorite = !!bool;
+    isfavorite = bool ? false : true;
+    console.log(isfavorite);
+    return fetch(`${DBHelper.RESTAURANT_URL}/${id}/?is_favorite=${isfavorite}`, {
+      method: 'POST'
+    }).then(res => res.json()).then(res => {
+      console.log(res);
+      IDBService.instertSpecificRestaurantToDB(res.id, isfavorite);
+      console.log(`post fav. restaurant: ${id} - ${isfavorite}`);
+    }).catch(err => console.log(err));
+  }
 
-  static fetchRestaurantById(id, callback) {
-    console.log(`Fetching restaurants as ${DBHelper.DATABASE_URL}`);
-    fetch(`${DBHelper.DATABASE_URL}/${id}`, {
-      method: 'GET'
-    }).then(response => response.json()).then(restaurant => {
-      if (restaurant) {
-        callback(null, restaurant);
+  static cacheOfflineReview(event, form) {
+    event.preventDefault();
+    const body = {
+      restaurant_id: parseInt(form.id.value),
+      name: form.userName.value,
+      rating: form.rating.value,
+      comments: form.review.value
+    };
+    console.log(body);
+    IDBService.insertOfflineUserReviewToDB(body.restaurant_id, body);
+    // .catch(err => console.log(err))
+  }
+
+  static postReview(event, form, isConnected) {
+    console.log(isConnected);
+    event.preventDefault();
+    const body = {
+      restaurant_id: parseInt(form.id.value),
+      name: form.userName.value,
+      rating: form.rating.value,
+      comments: form.review.value
+    };
+    console.log(body);
+
+    IDBService.insertUserReviewToDB(form.id.value, body);
+
+    return fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json'
       }
-    }).catch(err => {
-      console.log(err);
-      // Fetch from indexdb incase network is not available
-      DBHelper.fetchRestaurantsByIdFromClient(id).then(restaurant => callback(null, restaurant));
+    }).then(res => res.json()).catch(err => console.log(err)).then(response => console.log('Success', response));
+  }
+
+  static syncOfflineReviewUponConnection() {
+    console.log('Offline idb posting started');
+    IDBService.getAllIDBData().then(data => {
+      const array = [];
+      data.forEach(restaurant => {
+        console.log(restaurant);
+        restaurant.reviews.forEach(review => {
+          if (review) {
+            array.push(review);
+            console.log(array);
+          }
+        });
+      });
+    });
+    array.forEach(restaurant => {
+      console.log(restaurant);
+      const body = {
+        restaurant_id: restaurant.restaurant_id,
+        name: restaurant.name,
+        rating: restaurant.rating,
+        comments: restaurant.review
+      };
+      fetch(`${DBHelper.RESTAURANT_URL}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(res => res.json()).then(console.log('review has been posted after offline session')).catch(err => console.log(err));
     });
   }
 
@@ -110,13 +179,14 @@ class DBHelper {
     }
     const dbPromise = idb.open('restaurants', 1, upgradeDB => {
       const restaurantStore = upgradeDB.createObjectStore('restaurants', {
-        keyPath: 'id'
+        keyPath: 'id',
+        autoIncrement: true
       });
     });
 
     dbPromise.then(db => {
-      let tx = db.transaction('restaurants');
-      let store = tx.objectStore('restaurants').get(id);
+      const tx = db.transaction('restaurants');
+      const store = tx.objectStore('restaurants').get(id);
       return store.getAll();
     }).then(restaurant => {
       if (restaurant) {
@@ -131,9 +201,6 @@ class DBHelper {
   /**
    * Fetch restaurants by a cuisine type with proper error handling.
    */
-  /**
-   * Fetch restaurants by a cuisine type with proper error handling.
-   */
   static fetchRestaurantByCuisine(cuisine, callback) {
     // Fetch all restaurants  with proper error handling
     DBHelper.fetchRestaurants((error, restaurants) => {
@@ -141,7 +208,7 @@ class DBHelper {
         callback(error, null);
       } else {
         // Filter restaurants to have only given cuisine type
-        const results = restaurants.filter(r => r.cuisine_type == cuisine);
+        const results = restaurants.filter(r => r.cuisine_type === cuisine);
         callback(null, results);
       }
     });
@@ -157,7 +224,7 @@ class DBHelper {
         callback(error, null);
       } else {
         // Filter restaurants to have only given neighborhood
-        const results = restaurants.filter(r => r.neighborhood == neighborhood);
+        const results = restaurants.filter(r => r.neighborhood === neighborhood);
         callback(null, results);
       }
     });
@@ -173,11 +240,11 @@ class DBHelper {
         callback(error, null);
       } else {
         let results = restaurants;
-        if (cuisine != 'all') {
+        if (cuisine !== 'all') {
           // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
-        if (neighborhood != 'all') {
+        if (neighborhood !== 'all') {
           // filter by neighborhood
           results = results.filter(r => r.neighborhood == neighborhood);
         }
@@ -244,10 +311,9 @@ class DBHelper {
       position: restaurant.latlng,
       title: restaurant.name,
       url: DBHelper.urlForRestaurant(restaurant),
-      map: map,
+      map,
       animation: google.maps.Animation.DROP
     });
     return marker;
   }
-
 }

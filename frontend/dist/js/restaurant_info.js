@@ -1,18 +1,34 @@
+var _this = this;
+
 let restaurant;
-var map;
+let map;
+let isConnected = true;
+
+// Is online?
+
+window.addEventListener('offline', event => {
+  if (event.type === 'offline') {
+    // alert('You are offline! Storing all your data locally.');
+    console.log('Network is offline');
+    isConnected = false;
+  } else {
+    isConnected = true;
+    console.log('Online!');
+  }
+});
 
 /**
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  fetchRestaurantFromURL((error, restaurant) => {
+  fetchRestaurantFromURL((error, fetchedRestaurant) => {
     if (error) {
       // Got an error!
       console.error(error);
     } else {
       self.map = new google.maps.Map(document.getElementById('map'), {
         zoom: 16,
-        center: restaurant.latlng,
+        center: fetchedRestaurant.latlng,
         scrollwheel: false
       });
       fillBreadcrumb();
@@ -27,6 +43,7 @@ window.initMap = () => {
 fetchRestaurantFromURL = callback => {
   if (self.restaurant) {
     // restaurant already fetched!
+    console.log(self.restaurant);
     callback(null, self.restaurant);
     return;
   }
@@ -38,6 +55,7 @@ fetchRestaurantFromURL = callback => {
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       self.restaurant = restaurant;
+      console.log(restaurant);
       if (!restaurant) {
         console.error(error);
         return;
@@ -61,6 +79,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.alt = `This is ${restaurant.name}`;
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -69,8 +88,122 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
+  // fill fav restaurant
+  fillFavRestaurantHTML();
   // fill reviews
-  fillReviewsHTML();
+  setTimeout(() => {
+    fillReviewsHTML();
+  }, 3000);
+  // listen for review click
+  reviewEventListener();
+  // register serviceworker
+  // registerSW();
+};
+
+/**
+ * Create restaurant add or remove favorite
+ */
+fillFavRestaurantHTML = (is_favorite = self.restaurant.is_favorite, id = self.restaurant.id) => {
+  const favoriteRes = document.getElementById('user-actions');
+  const btn = document.createElement('button');
+  btn.setAttribute('id', 'btn-fav');
+  favoriteRes.appendChild(btn);
+
+  if (is_favorite === 'false') {
+    btn.onclick = () => DBHelper.fetchFavoriteRestaurant(id, false);
+    console.log(is_favorite);
+    btn.innerHTML = 'Favorize <3';
+  } else {
+    btn.onclick = () => DBHelper.fetchFavoriteRestaurant(id, true);
+    console.log(is_favorite);
+    btn.innerHTML = 'Un-favorize </3';
+  }
+};
+
+reviewEventListener = () => {
+  const reviewBtn = document.getElementById('user-actions');
+  const btn = document.createElement('button');
+  btn.setAttribute('id', 'btn-review');
+  reviewBtn.appendChild(btn);
+  btn.innerHTML = 'Review?';
+  btn.onclick = () => fillCreateReviewField();
+};
+
+
+fillCreateReviewField = (id = self.restaurant.id) => {
+
+  console.log(_this.isConnected);
+
+  const formContainer = document.getElementById('review-form');
+
+  const form = document.createElement('form');
+  form.setAttribute('id', 'reviewform');
+  form.setAttribute('onsubmit', `DBHelper.postReview(event, this, ${_this.isConnected})`);
+
+  const h2 = document.createElement('h2');
+  h2.innerHTML = 'Restaurant Review Form ';
+  form.appendChild(h2);
+
+  const linebreak = document.createElement('br');
+  form.appendChild(linebreak);
+
+  const restaurantId = document.createElement('input');
+  restaurantId.setAttribute('type', 'hidden');
+  restaurantId.setAttribute('name', 'id');
+  restaurantId.setAttribute('value', `${id}`);
+  form.appendChild(restaurantId);
+
+  const namelabel = document.createElement('label');
+  namelabel.innerHTML = 'Name: ';
+  form.appendChild(namelabel);
+
+  const inputelement = document.createElement('input');
+  inputelement.setAttribute('type', 'text');
+  inputelement.setAttribute('name', 'userName');
+  inputelement.setAttribute('placeholder', 'Please type your name');
+  inputelement.setAttribute('aria-label', 'customer name');
+  form.appendChild(inputelement);
+
+  form.appendChild(linebreak);
+
+  const ratinglabel = document.createElement('label');
+  ratinglabel.innerHTML = 'Rating: ';
+  form.appendChild(ratinglabel);
+
+  const ratingelement = document.createElement('input');
+  ratingelement.setAttribute('type', 'text');
+  ratingelement.setAttribute('name', 'rating');
+  ratingelement.setAttribute('placeholder', 'Rate the restaurant from 1-5');
+  // TODO: RegEx ^([1-9]|[12]\d|3[0-6])$ here
+  ratingelement.setAttribute('aria-label', 'customer rating');
+  form.appendChild(ratingelement);
+
+  const ratingbreak = document.createElement('br');
+  form.appendChild(ratingbreak);
+
+  const reviewlabel = document.createElement('label');
+  reviewlabel.innerHTML = 'Review: ';
+  form.appendChild(reviewlabel);
+
+  const texareaelement = document.createElement('textarea');
+  texareaelement.setAttribute('name', 'review');
+  texareaelement.setAttribute('placeholder', 'Input your review here');
+  texareaelement.setAttribute('aria-label', 'customer review');
+  form.appendChild(texareaelement);
+
+  const reviewbreak = document.createElement('br');
+  form.appendChild(reviewbreak);
+
+  const submitelement = document.createElement('input');
+  submitelement.setAttribute('type', 'submit');
+  submitelement.setAttribute('name', 'submit-form');
+  submitelement.setAttribute('id', 'submit-form');
+  submitelement.setAttribute('value', 'Submit');
+  form.appendChild(submitelement);
+  // submitelement.onclick = () => DBHelper.cacheOfflineReview(event, this);
+  formContainer.appendChild(form);
+
+  getSWofflineSync();
 };
 
 /**
@@ -78,17 +211,18 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
  */
 fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
   const hours = document.getElementById('restaurant-hours');
-  for (let key in operatingHours) {
-    const row = document.createElement('tr');
-    const day = document.createElement('td');
-    day.innerHTML = key;
-    row.appendChild(day);
+  for (const key in operatingHours) {
+    if (key) {
+      const row = document.createElement('tr');
+      const day = document.createElement('td');
+      day.innerHTML = key;
+      row.appendChild(day);
 
-    const time = document.createElement('td');
-    time.innerHTML = operatingHours[key];
-    row.appendChild(time);
-
-    hours.appendChild(row);
+      const time = document.createElement('td');
+      time.innerHTML = operatingHours[key];
+      row.appendChild(time);
+      hours.appendChild(row);
+    }
   }
 };
 
@@ -96,6 +230,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+  console.log(reviews);
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
@@ -155,7 +290,7 @@ getParameterByName = (name, url) => {
   if (!url) url = window.location.href;
   name = name.replace(/[\[\]]/g, '\\$&');
   const regex = new RegExp(`[?&]${name}(=([^&#]*)|&|#|$)`),
-        results = regex.exec(url);
+    results = regex.exec(url);
   if (!results) return null;
   if (!results[2]) return '';
   return decodeURIComponent(results[2].replace(/\+/g, ' '));

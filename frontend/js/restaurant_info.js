@@ -1,11 +1,18 @@
 let restaurant;
 let map;
-
+let isConnected = true;
 
 // Is online?
+window.addEventListener('offline', (event) => {
+  if (event.type === 'offline') {
+    // alert('You are offline! Storing all your data locally.');
+    console.log('Network is offline')
+    isConnected = false;
+  } else {
 
-window.addEventListener('online', (e) => {
-  console.log('Network is available')
+    isConnected = true;
+    console.log('Online!')
+  }
 });
 
 /**
@@ -81,7 +88,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   // fill reviews
   setTimeout(() => {
     fillReviewsHTML();
-  }, 3000)
+  }, 1000)
   // listen for review click
   reviewEventListener();
   // register serviceworker
@@ -117,25 +124,15 @@ reviewEventListener = () => {
   btn.onclick = () => fillCreateReviewField();
 };
 
-getSWofflineSync = () => {
-  navigator.serviceWorker.register('/sw.js', {
-    scope: './',
-  }).then((worker) => {
-    console.log('starting SW sync')
-    document.getElementById('reviewform').addEventListener('submit', () => {
-      console.log(worker)
-      return worker.sync.register('offline-sync');
-    })
-  })
-}
-
 fillCreateReviewField = (id = self.restaurant.id) => {
+
+  console.log(isConnected)
 
   const formContainer = document.getElementById('review-form');
 
   const form = document.createElement('form');
   form.setAttribute('id', 'reviewform');
-  form.setAttribute('onsubmit', `DBHelper.postReview(event, this)`);
+  form.setAttribute('onsubmit', `DBHelper.postReview(event, this, isConnected)`);
 
   const h2 = document.createElement('h2');
   h2.innerHTML = 'Restaurant Review Form ';
@@ -199,8 +196,6 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   form.appendChild(submitelement);
   // submitelement.onclick = () => DBHelper.cacheOfflineReview(event, this);
   formContainer.appendChild(form);
-
-  getSWofflineSync();
 }
 
 /**

@@ -1,18 +1,9 @@
-let restaurants, neighborhoods, cuisines;
-const map;
-const markers = [];
+let restaurants;
+let neighborhoods;
+let cuisines;
+let map;
+var markers = [];
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js', {
-      scope: './',
-    })
-    .then((registration) => {
-      console.log('Service Worker Registered');
-    })
-    .catch((error) => {
-      console.log('Service Worker Failed to Register', error);
-    })
-}
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
@@ -82,7 +73,7 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
  * Initialize Google map, called from HTML.
  */
 window.initMap = () => {
-  let loc = {
+  const loc = {
     lat: 40.722216,
     lng: -73.987501
   };
@@ -153,7 +144,7 @@ createRestaurantHTML = restaurant => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
-  image.setAttribute("alt", `Image of ${restaurant.name}`);
+  image.setAttribute('alt', `Image of ${restaurant.name}`);
   li.append(image);
 
   const name = document.createElement('h1');

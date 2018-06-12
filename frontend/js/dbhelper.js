@@ -53,7 +53,7 @@ class DBHelper {
         if (restaurant) {
           callback(null, restaurant);
           console.log(restaurant)
-          this.populateRestaurantsWithReviews(id, restaurant);
+          this.fetchRestaurantReviews(id, restaurant);
         }
       })
       .catch((err) => {
@@ -64,7 +64,7 @@ class DBHelper {
       });
   }
 
-  static populateRestaurantsWithReviews(id, restaurant) {
+  static fetchRestaurantReviews(id, restaurant) {
     console.log(restaurant)
     console.log(id)
     parseInt(id)
@@ -131,17 +131,22 @@ class DBHelper {
   }
 
   static postReview(event, form) {
+    // console.log(isConnected)
+    console.log(event)
+    const id = parseInt(form.id.value);
     event.preventDefault();
     const body = {
-      restaurant_id: parseInt(form.id.value),
+      restaurant_id: id,
       name: form.userName.value,
       rating: form.rating.value,
       comments: form.review.value,
     };
     console.log(body);
-    IDBService.insertUserReviewToDB(form.id.value, body);
+    console.log(id);
 
-    return fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+    // IDBService.insertUserReviewToDB(id, body);
+
+    fetch(`${DBHelper.DATABASE_URL}/reviews`, {
         method: 'POST',
         body: JSON.stringify(body),
         headers: {
@@ -149,8 +154,8 @@ class DBHelper {
         },
       })
       .then(res => res.json())
-      .catch(err => console.log(err))
       .then(response => console.log('Success', response))
+      .catch(err => console.log(err))
   }
 
   static syncOfflineReviewUponConnection() {
