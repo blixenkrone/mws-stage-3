@@ -1,6 +1,13 @@
 let restaurant;
 let map;
 
+
+// Is online?
+
+window.addEventListener('online', (e) => {
+  console.log('Network is available')
+});
+
 /**
  * Initialize Google map, called from HTML.
  */

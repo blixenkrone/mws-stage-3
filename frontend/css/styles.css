@@ -265,7 +265,7 @@ nav h1 a {
   right: 0;
   top: 80px;
   width: calc(100% - 36rem);
-  height: 89%;
+  height: 65em;
 }
 
 .inside #map {
@@ -371,7 +371,7 @@ nav h1 a {
   }
   .inside #map-container {
     position: absolute;
-    height: 15%;
+    height: 24em;
     width: 100%;
   }
   section#restaurant-container {
@@ -399,11 +399,10 @@ nav h1 a {
     margin-top: 4rem;
   }
   #reviews-list {
-    margin: 4rem;
-    margin-top: 20rem;
+    margin-top: 5rem;
   }
   #reviews-list li {
-    width: 50%;
+    width: 80%;
   }
   #breadcrumb,
   #breadcrumb li {
@@ -418,9 +417,6 @@ nav h1 a {
 
 @media screen and (min-width: 200px) and (max-width: 1040px) {
   /* Home Page */
-  #reviews-list li {
-    /* width: 25rem; */
-  }
   #restaurants-list li {
     border-radius: 2rem;
     padding: 4rem;
@@ -434,8 +430,12 @@ nav h1 a {
   #reviews-container {
     width: 100%;
   }
+  #reviews-list li {
+    background-color: #ff4064;
+    border-radius: 6px;
+  }
   #reviews-list li p {
-    font-size: 2rem;
+    font-size: 1rem;
   }
   #reviews-list li p:nth-child(-n+3) {
     font-size: 2.5rem;
