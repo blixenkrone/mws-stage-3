@@ -1,19 +1,6 @@
 let restaurant;
 let map;
-let isConnected = true;
-
-// Is online?
-window.addEventListener('offline', (event) => {
-  if (event.type === 'offline') {
-    // alert('You are offline! Storing all your data locally.');
-    console.log('Network is offline')
-    isConnected = false;
-  } else {
-
-    isConnected = true;
-    console.log('Online!')
-  }
-});
+let isConnected;
 
 /**
  * Initialize Google map, called from HTML.
@@ -33,6 +20,8 @@ window.initMap = () => {
     }
   });
 }
+
+
 
 /**
  * Get current restaurant from page URL.
@@ -124,18 +113,57 @@ reviewEventListener = () => {
   btn.onclick = () => fillCreateReviewField();
 };
 
+window.addEventListener('load', () => {
+  console.log('load!')
+  const updateOnlineStatus = (event) => {
+    const condition = navigator.onLine ? 'online' : 'offline';
+    if (condition === 'online') {
+      IDBService.handleOfflineReviews();
+      isConnected = true;
+      console.log('online!')
+    } else if (condition === 'offline') {
+      isConnected = false;
+    }
+  }
+  updateOnlineStatus();
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+});
+
+// Is offline?
+window.addEventListener('offline', (event) => {
+  if (event.type === 'offline') {
+    alert('You are offline! Storing all your data locally.');
+    console.log('Network is offline')
+    isConnected = false;
+  }
+})
+// Is online?
+window.addEventListener('online', (event) => {
+  // IDBService.handleOfflineReviews();
+  /*
+   * Post to offline database
+   * this iwndow listener will handleOfflineReviews()
+   * if not connectec, it will just be stored locally
+   */
+})
+
 fillCreateReviewField = (id = self.restaurant.id) => {
-
-  console.log(isConnected)
-
   const formContainer = document.getElementById('review-form');
 
   const form = document.createElement('form');
   form.setAttribute('id', 'reviewform');
-  form.setAttribute('onsubmit', `DBHelper.postReview(event, this, isConnected)`);
+  if (isConnected) {
+    form.setAttribute('onsubmit', 'DBHelper.postReview(event, this); ');
+    console.log('isConnected')
+
+  } else {
+    console.log('is not Connected')
+    form.setAttribute('onsubmit', 'DBHelper.cacheOfflineReview(event, this)');
+  }
 
   const h2 = document.createElement('h2');
-  h2.innerHTML = 'Restaurant Review Form ';
+  h2.innerHTML = 'Create review: ';
   form.appendChild(h2);
 
   const linebreak = document.createElement('br');
@@ -154,14 +182,14 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   const inputelement = document.createElement('input');
   inputelement.setAttribute('type', 'text');
   inputelement.setAttribute('name', 'userName');
-  inputelement.setAttribute('placeholder', 'Please type your name');
+  inputelement.setAttribute('placeholder', 'Please type your full name');
   inputelement.setAttribute('aria-label', 'customer name');
   form.appendChild(inputelement);
 
   form.appendChild(linebreak);
 
   const ratinglabel = document.createElement('label');
-  ratinglabel.innerHTML = 'Rating: ';
+  ratinglabel.innerHTML = 'Restaurant rating: ';
   form.appendChild(ratinglabel);
 
   const ratingelement = document.createElement('input');
@@ -176,7 +204,7 @@ fillCreateReviewField = (id = self.restaurant.id) => {
   form.appendChild(ratingbreak);
 
   const reviewlabel = document.createElement('label');
-  reviewlabel.innerHTML = 'Review: ';
+  reviewlabel.innerHTML = 'Restaurant review: ';
   form.appendChild(reviewlabel);
 
   const texareaelement = document.createElement('textarea');

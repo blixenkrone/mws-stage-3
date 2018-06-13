@@ -127,14 +127,14 @@ class DBHelper {
     };
     console.log(body)
     IDBService.insertOfflineUserReviewToDB(body.restaurant_id, body);
-    // .catch(err => console.log(err))
   }
 
   static postReview(event, form) {
-    // console.log(isConnected)
-    console.log(event)
+    console.log(form)
     const id = parseInt(form.id.value);
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+    }
     const body = {
       restaurant_id: id,
       name: form.userName.value,
@@ -143,8 +143,6 @@ class DBHelper {
     };
     console.log(body);
     console.log(id);
-
-    // IDBService.insertUserReviewToDB(id, body);
 
     fetch(`${DBHelper.DATABASE_URL}/reviews`, {
         method: 'POST',
@@ -158,40 +156,21 @@ class DBHelper {
       .catch(err => console.log(err))
   }
 
-  static syncOfflineReviewUponConnection() {
-    console.log('Offline idb posting started');
-    IDBService.getAllIDBData()
-      .then((data) => {
-        const array = [];
-        data.forEach((restaurant) => {
-          console.log(restaurant)
-          restaurant.reviews.forEach((review) => {
-            if (review) {
-              array.push(review)
-              console.log(array);
-            }
-          })
-        })
+  static postReviewUponConnection(body) {
+    const id = parseInt(body.id);
+    console.log(body);
+    console.log(id);
+
+    return fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       })
-    array.forEach((restaurant) => {
-      console.log(restaurant)
-      const body = {
-        restaurant_id: restaurant.restaurant_id,
-        name: restaurant.name,
-        rating: restaurant.rating,
-        comments: restaurant.review,
-      }
-      fetch(`${DBHelper.RESTAURANT_URL}/reviews`, {
-          method: 'POST',
-          body: JSON.stringify(body),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        .then(res => res.json())
-        .then(console.log('review has been posted after offline session'))
-        .catch(err => console.log(err))
-    })
+      .then(res => res.json())
+      .then(response => console.log('Offline posted! ', response))
+      .catch(err => console.log(err))
   }
 
 

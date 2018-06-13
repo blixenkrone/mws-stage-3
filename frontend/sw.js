@@ -60,9 +60,11 @@ self.addEventListener('activate', (event) => {
  */
 self.addEventListener('fetch', (event) => {
     // console.log(`method: ${event.request.method} and url:  ${event.request.url}`);
-    return event.respondWith(caches.match(event.request)
+    return event.respondWith(caches.match(event.request, {
+            ignoreSearch: true,
+        })
         .then((match) => {
-            if (match && match !== undefined) return match;
+            if (match) return match;
             return fetch(event.request)
                 .then((response) => {
                     const responseClone = response.clone();

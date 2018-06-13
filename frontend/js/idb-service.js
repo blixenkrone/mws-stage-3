@@ -21,22 +21,14 @@ class IDBService {
     }
 
     static getAllIDBData() {
-        this.getDBPromise().then((db) => {
-            return db.transaction('restaurants')
-                .objectStore('restaurants')
-                .getAll();
-        })
+        return this.getDBPromise()
+            .then((db) => {
+                if (!db) return;
+                db.transaction('restaurants')
+                    .objectStore('restaurants')
+                    .getAll();
+            })
     }
-
-    // static deleteOldDatabase() {
-    //     const DBDeleted = window.indexedDB.deleteDatabase('restaurants');
-    //     DBDeleted.onerror = (e) => {
-    //         console.log(e);
-    //     };
-    //     DBDeleted.onsuccess = (e) => {
-    //         console.log(e);
-    //     };
-    // }
 
     static insertRestaurantsToDB(restaurants) {
         this.getDBPromise().then((db) => {
@@ -72,37 +64,106 @@ class IDBService {
         })
     }
 
-    static insertUserReviewToDB(id, body) {
+    static insertUserReviewToDB(form) {
         const dbPromise = idb.open('reviews', 1, (upgradeDB) => {
             upgradeDB.createObjectStore('reviews', {
                 autoIncrement: true,
             });
         })
+        console.log(form)
 
+        const body = {
+            restaurant_id: parseInt(form.id),
+            name: form.userName,
+            rating: form.rating,
+            comments: form.review,
+        };
+        console.log(body)
         console.log('insert review to DB an online connection')
-        dbPromise.then((db) => {
+        return dbPromise.then((db) => {
             const tx = db.transaction('reviews', 'readwrite');
             const store = tx.objectStore('reviews');
-            console.log(id)
-            store.put(body, id)
+            console.log(body)
+            store.put(body)
                 .then(success => console.log(`Reviews , ${restaurant}, ${success}`));
         })
     }
 
     static insertOfflineUserReviewToDB(id, body) {
-        const dbPromise = idb.open('sync-reviews', 1, (upgradeDB) => {
-            upgradeDB.createObjectStore('sync-reviews', {
+        const dbPromise = idb.open('offline-reviews', 1, (upgradeDB) => {
+            upgradeDB.createObjectStore('offline-reviews', {
                 keyPath: 'id',
                 autoIncrement: true,
             });
         })
         console.log('insert review to DB a user without connection')
         dbPromise.then((db) => {
-            const tx = db.transaction('sync-reviews', 'readwrite');
-            const store = tx.objectStore('sync-reviews');
+            const tx = db.transaction('offline-reviews', 'readwrite');
+            const store = tx.objectStore('offline-reviews');
             console.log(id)
-            store.put(body, id)
+            console.log(body)
+            store.put(body)
                 .then(success => console.log(`Reviews , ${restaurant}, ${success}`));
         })
     }
+
+    static getDBReviewsPromise() {
+        return idb.open('offline-reviews', 1, (upgradeDB) => {
+            upgradeDB.createObjectStore('offline-reviews', {
+                keyPath: 'id',
+                autoIncrement: true,
+            });
+        })
+    }
+
+    static getAllOfflineReviewsIDB() {
+        return this.getDBReviewsPromise()
+            .then((db) => {
+                if (!db) return;
+                return db.transaction('offline-reviews')
+                    .objectStore('offline-reviews')
+                    .getAll();
+            })
+    }
+
+    static handleOfflineReviews() {
+        console.log('handler offline review started...')
+        return this.getAllOfflineReviewsIDB()
+            .then((reviews) => {
+                console.log(reviews)
+                if (!reviews) return;
+                // Posting reviews to the server
+                const reviewPromises = [];
+                reviews.forEach((review) => {
+                    console.log(review)
+                    const body = {
+                        id: review.id,
+                        restaurant_id: review.restaurant_id,
+                        name: review.name,
+                        comments: review.comments,
+                        rating: review.rating,
+                    }
+                    const myPromise = DBHelper.postReviewUponConnection(body)
+                    this.insertUserReviewToDB(body)
+                        .then(() => {
+                            this.deleteItemFromDatabase(review.id);
+                            console.log('Deleted offline after input with id:', review.id)
+                        })
+                    reviewPromises.push(myPromise);
+                })
+                return Promise.all(reviewPromises);
+            });
+    }
+
+    static deleteItemFromDatabase(id) {
+        return this.getDBReviewsPromise().then((db) => {
+            if (!db) return;
+            const tx = db.transaction('offline-reviews', 'readwrite');
+            const store = tx.objectStore('offline-reviews');
+            store.delete(id);
+            return tx.complete;
+        })
+    }
+
+
 }
