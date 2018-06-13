@@ -4,6 +4,18 @@ let cuisines;
 let map;
 var markers = [];
 
+// Register SW
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js', {
+    scope: './'
+  }).then(registration => {
+    console.log('Service Worker Registered');
+  }).catch(error => {
+    console.log('Service Worker Failed to Register');
+  });
+}
+
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */

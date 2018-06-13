@@ -48,7 +48,7 @@ class DBHelper {
       if (restaurant) {
         callback(null, restaurant);
         console.log(restaurant);
-        this.populateRestaurantsWithReviews(id, restaurant);
+        this.fetchRestaurantReviews(id, restaurant);
       }
     }).catch(err => {
       console.log(err);
@@ -57,7 +57,7 @@ class DBHelper {
     });
   }
 
-  static populateRestaurantsWithReviews(id, restaurant) {
+  static fetchRestaurantReviews(id, restaurant) {
     console.log(restaurant);
     console.log(id);
     parseInt(id);
@@ -114,21 +114,36 @@ class DBHelper {
     };
     console.log(body);
     IDBService.insertOfflineUserReviewToDB(body.restaurant_id, body);
-    // .catch(err => console.log(err))
   }
 
-  static postReview(event, form, isConnected) {
-    console.log(isConnected);
-    event.preventDefault();
+  static postReview(event, form) {
+    console.log(form);
+    const id = parseInt(form.id.value);
+    if (event) {
+      event.preventDefault();
+    }
     const body = {
-      restaurant_id: parseInt(form.id.value),
+      restaurant_id: id,
       name: form.userName.value,
       rating: form.rating.value,
       comments: form.review.value
     };
     console.log(body);
+    console.log(id);
 
-    IDBService.insertUserReviewToDB(form.id.value, body);
+    fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then(res => res.json()).then(response => console.log('Success', response)).catch(err => console.log(err));
+  }
+
+  static postReviewUponConnection(body) {
+    const id = parseInt(body.id);
+    console.log(body);
+    console.log(id);
 
     return fetch(`${DBHelper.DATABASE_URL}/reviews`, {
       method: 'POST',
@@ -136,39 +151,7 @@ class DBHelper {
       headers: {
         'Content-Type': 'application/json'
       }
-    }).then(res => res.json()).catch(err => console.log(err)).then(response => console.log('Success', response));
-  }
-
-  static syncOfflineReviewUponConnection() {
-    console.log('Offline idb posting started');
-    IDBService.getAllIDBData().then(data => {
-      const array = [];
-      data.forEach(restaurant => {
-        console.log(restaurant);
-        restaurant.reviews.forEach(review => {
-          if (review) {
-            array.push(review);
-            console.log(array);
-          }
-        });
-      });
-    });
-    array.forEach(restaurant => {
-      console.log(restaurant);
-      const body = {
-        restaurant_id: restaurant.restaurant_id,
-        name: restaurant.name,
-        rating: restaurant.rating,
-        comments: restaurant.review
-      };
-      fetch(`${DBHelper.RESTAURANT_URL}/reviews`, {
-        method: 'POST',
-        body: JSON.stringify(body),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then(res => res.json()).then(console.log('review has been posted after offline session')).catch(err => console.log(err));
-    });
+    }).then(res => res.json()).then(response => console.log('Offline posted! ', response)).catch(err => console.log(err));
   }
 
   static fetchRestaurantsByIdFromClient(id) {
