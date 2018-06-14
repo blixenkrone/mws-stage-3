@@ -5,6 +5,19 @@ let isConnected;
 /**
  * Initialize Google map, called from HTML.
  */
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js', {
+      scope: './',
+    })
+    .then((registration) => {
+      console.log('Service Worker Registered');
+    })
+    .catch((error) => {
+      console.log('Service Worker Failed to Register');
+    });
+}
+
 window.initMap = () => {
   fetchRestaurantFromURL((error, fetchedRestaurant) => {
     if (error) { // Got an error!
