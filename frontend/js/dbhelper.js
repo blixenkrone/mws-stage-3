@@ -100,16 +100,17 @@ class DBHelper {
   }
 
   static fetchFavoriteRestaurant(id, bool) {
-    let isfavorite = !!bool;
-    isfavorite = bool ? false : true;
-    console.log(isfavorite)
-    return fetch(`${DBHelper.RESTAURANT_URL}/${id}/?is_favorite=${isfavorite}`, {
+    // let isfavorite = !!bool;
+    // console.log(isfavorite)
+    // isfavorite = bool ? false : true;
+    // console.log(isfavorite)
+    return fetch(`http://localhost:1337/restaurants/${id}/?is_favorite=${bool}`, {
         method: 'POST',
       })
-      .then(res => res.json())
-      .then(res => IDBService.instertSpecificRestaurantToDB(res.id))
-      .then(console.log(`post fav. restaurant: ${id} - ${isfavorite}`))
-      .then(location.reload())
+      // .then(res => res.json())
+      .then(res => IDBService.toggleFavoriteRestIDB(id, bool))
+      .then(res => console.log(`post fav. restaurant: ${id} - ${bool} - ${res}`))
+      // .then(location.reload())
       .catch(err => console.log(err))
   }
 

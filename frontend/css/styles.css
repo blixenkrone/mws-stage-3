@@ -211,12 +211,9 @@ nav h1 a {
   background-size: cover;
   border-top-left-radius: 2rem;
   border-bottom-right-radius: 2rem;
-  margin: 1rem;
   background-color: #ccc;
   display: block;
-  max-width: 100%;
-  min-height: 248px;
-  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 
@@ -286,7 +283,7 @@ nav h1 a {
 }
 
 #restaurant-img {
-  width: 90%;
+  width: 100%;
 }
 
 #restaurant-address {
@@ -419,7 +416,7 @@ nav h1 a {
   /* Home Page */
   #restaurants-list li {
     border-radius: 2rem;
-    padding: 4rem;
+    padding: 1rem;
     background-color: #eeeeee;
   }
   ul#restaurants-list h1,

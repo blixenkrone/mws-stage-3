@@ -9,6 +9,9 @@ class IDBService {
      * 2. Check for database exists?
      * 3. offline site?: https: //developer.mozilla.org/en-US/docs/Web/API/NavigatorOnLine/Online_and_offline_events
      */
+    static get dbPromise() {
+        return idb.open('restaurants', 1);
+    }
 
     static getDBPromise() {
         // If db exists or create one
@@ -63,6 +66,25 @@ class IDBService {
                     console.log(restaurant)
                     console.log(id)
                     store.put(restaurant);
+                    return tx.complete;
+                })
+        })
+    }
+
+    static toggleFavoriteRestIDB(id, bool) {
+        IDBService.dbPromise.then((db) => {
+            const tx = db.transaction('restaurants', 'readwrite');
+            const store = tx.objectStore('restaurants');
+            console.log(store)
+            console.log(id)
+            store.get(id)
+                .then((restaurant) => {
+                    console.log(restaurant)
+                    console.log(id)
+                    store.is_favorite = Boolean(bool);
+                    console.log(store.is_favorite)
+                    store.put(restaurant);
+                    console.log(restaurant)
                     return tx.complete;
                 })
         })
@@ -131,7 +153,6 @@ class IDBService {
     }
 
     static handleOfflineReviews() {
-        console.log('handler offline review started...')
         return this.getAllOfflineReviewsIDB()
             .then((reviews) => {
                 console.log(reviews)

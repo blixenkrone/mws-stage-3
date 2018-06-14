@@ -39,7 +39,6 @@ fetchRestaurantFromURL = (callback) => {
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       self.restaurant = restaurant;
-      console.log(restaurant);
       if (!restaurant) {
         console.error(error);
         return;
@@ -93,14 +92,14 @@ fillFavRestaurantHTML = (is_favorite = self.restaurant.is_favorite, id = self.re
   btn.setAttribute('id', 'btn-fav');
   favoriteRes.appendChild(btn);
 
-  if (is_favorite === 'false') {
-    btn.onclick = () => DBHelper.fetchFavoriteRestaurant(id, false);
+  if (is_favorite == 'true') {
+    btn.setAttribute('onclick', `DBHelper.fetchFavoriteRestaurant(${id}, false)`);
     console.log(is_favorite)
-    btn.innerHTML = 'Favorize <3';
+    btn.innerHTML = 'Favorize';
   } else {
-    btn.onclick = () => DBHelper.fetchFavoriteRestaurant(id, true);
+    btn.setAttribute('onclick', `DBHelper.fetchFavoriteRestaurant(${id}, true)`);
     console.log(is_favorite)
-    btn.innerHTML = 'Un-favorize </3';
+    btn.innerHTML = 'Un-favorize';
   }
 };
 
@@ -114,13 +113,11 @@ reviewEventListener = () => {
 };
 
 window.addEventListener('load', () => {
-  console.log('load!')
   const updateOnlineStatus = (event) => {
     const condition = navigator.onLine ? 'online' : 'offline';
     if (condition === 'online') {
       IDBService.handleOfflineReviews();
       isConnected = true;
-      console.log('online!')
     } else if (condition === 'offline') {
       isConnected = false;
     }
