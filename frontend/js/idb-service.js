@@ -48,18 +48,22 @@ class IDBService {
     }
 
     static instertSpecificRestaurantToDB(id) {
-        this.getDBPromise().then((db) => {
+        const dbPromise = idb.open('restaurants', 1, (upgradeDB) => {
+            upgradeDB.createObjectStore('restaurants', {
+                autoIncrement: true,
+                keyPath: 'id',
+            });
+        })
+        dbPromise.then((db) => {
             const tx = db.transaction('restaurants', 'readwrite');
             const store = tx.objectStore('restaurants');
             console.log(store)
             store.get(id)
                 .then((restaurant) => {
-                    if (restaurant) {
-                        console.log(restaurant)
-                        console.log(id)
-                        store.put(restaurant);
-                        return tx.complete;
-                    }
+                    console.log(restaurant)
+                    console.log(id)
+                    store.put(restaurant);
+                    return tx.complete;
                 })
         })
     }

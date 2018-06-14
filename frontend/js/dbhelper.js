@@ -65,8 +65,6 @@ class DBHelper {
   }
 
   static fetchRestaurantReviews(id, restaurant) {
-    console.log(restaurant)
-    console.log(id)
     parseInt(id)
     fetch(`http://localhost:1337/reviews/?restaurant_id=${id}`)
       .then(res => res.json())
@@ -109,11 +107,9 @@ class DBHelper {
         method: 'POST',
       })
       .then(res => res.json())
-      .then((res) => {
-        console.log(res)
-        IDBService.instertSpecificRestaurantToDB(res.id, isfavorite)
-        console.log(`post fav. restaurant: ${id} - ${isfavorite}`)
-      })
+      .then(res => IDBService.instertSpecificRestaurantToDB(res.id))
+      .then(console.log(`post fav. restaurant: ${id} - ${isfavorite}`))
+      .then(location.reload())
       .catch(err => console.log(err))
   }
 

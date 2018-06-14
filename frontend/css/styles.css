@@ -383,7 +383,7 @@ nav h1 a {
     flex-direction: column;
   }
   section#reviews-container {
-    margin-top: 15rem;
+    margin-top: 2rem;
   }
   table#restaurant-hours td {
     font-size: 1rem;

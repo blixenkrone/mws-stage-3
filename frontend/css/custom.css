@@ -16,6 +16,8 @@
 #review-form-section {
     max-width: 30rem;
     padding: 2rem;
+    width: 80%;
+    margin-top: 2rem;
 }
 
 #review-form hr {
@@ -62,4 +64,10 @@
     font-size: 18px;
     font-weight: 700;
     cursor: pointer;
+}
+
+@media screen and (max-width: 1040px) {
+    #review-form-section {
+        margin-top: 15rem;
+    }
 }
