@@ -215,6 +215,7 @@ nav h1 a {
   display: block;
   width: 100%;
   height: auto;
+  margin-top: 1rem;
 }
 
 #restaurants-list li h1 {
@@ -283,7 +284,7 @@ nav h1 a {
 }
 
 #restaurant-img {
-  width: 100%;
+  width: 90%;
 }
 
 #restaurant-address {

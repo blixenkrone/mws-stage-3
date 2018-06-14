@@ -110,7 +110,7 @@ class DBHelper {
       // .then(res => res.json())
       .then(res => IDBService.toggleFavoriteRestIDB(id, bool))
       .then(res => console.log(`post fav. restaurant: ${id} - ${bool} - ${res}`))
-      // .then(location.reload())
+      .then(location.reload())
       .catch(err => console.log(err))
   }
 

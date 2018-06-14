@@ -1,11 +1,13 @@
 {
-    "name": "Restaurant Reviews",
-    "short_name": "Restaurants",
+    "name": "Restaurant Reviews MWS",
+    "short_name": "Restaurants App",
+    "start_url": ".",
+    "scope": ".",
     "theme_color": "#3496dc",
     "background_color": "#f3f3f3",
-    "display": "fullscreen",
-    "Scope": "/",
-    "start_url": "/",
+    "display": "standalone",
+    "lang": "en-US",
+    "orientation": "portrait-primary",
     "splash_pages": null,
     "icons": [{
             "src": "img-source/icons/icon-192x192.jpeg",

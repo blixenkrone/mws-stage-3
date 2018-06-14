@@ -1,4 +1,5 @@
 importScripts('/js/idb.js');
+importScripts('/js/idb-service.js');
 importScripts('/js/dbhelper.js');
 
 const cacheName = 'REST_V1';
@@ -7,31 +8,31 @@ const cacheData = [
     'sw.js',
     './index.html',
     './restaurant.html',
+    './js/idb.js',
+    './js/dbhelper.js',
+    './js/idb-service.js',
+    './js/main.js',
     './js/restaurant_info.js',
-    './js/**.js',
     './css/styles.css',
     './css/custom.css',
-    './restaurant.html?id=1',
-    './restaurant.html?id=2',
-    './restaurant.html?id=3',
-    './restaurant.html?id=4',
-    './restaurant.html?id=5',
-    './restaurant.html?id=6',
-    './restaurant.html?id=7',
-    './restaurant.html?id=8',
-    './restaurant.html?id=9',
-    './restaurant.html?id=10',
-    'imgs/10.jpg',
-    'imgs/**.jpg',
-    './data/restaurants.json',
+    'imgs/1.jpg',
+    'imgs/2.jpg',
+    'imgs/3.jpg',
+    'imgs/4.jpg',
+    'imgs/5.jpg',
+    'imgs/6.jpg',
+    'imgs/7.jpg',
+    'imgs/8.jpg',
+    'imgs/9.jpg',
 ];
 
 
 // installing the service worker
 self.addEventListener('install', (event) => {
-    console.log('installing SW')
     event.waitUntil(caches.open(cacheName)
         .then((cache) => {
+            console.log('installing SW')
+            console.log(cache.addAll(cacheData))
             return cache.addAll(cacheData)
         })
         .catch(err => console.log(err)))
@@ -50,32 +51,11 @@ self.addEventListener('activate', (event) => {
         }));
 });
 
-
-
-/**
- if (thiscacheVersion !== cacheVersion) {
-     console.log('Removing the old cache');
-     caches.delete(thiscacheVersion);
- }
- */
 self.addEventListener('fetch', (event) => {
-    // console.log(`method: ${event.request.method} and url:  ${event.request.url}`);
-    return event.respondWith(caches.match(event.request, {
-            ignoreSearch: true,
-        })
-        .then((match) => {
-            if (match) return match;
-            return fetch(event.request)
-                .then((response) => {
-                    const responseClone = response.clone();
-                    return caches.open(cacheName)
-                        .then((cache) => {
-                            if (event.request.method === 'GET') {
-                                cache.put(event.request, responseClone)
-                            }
-                        })
-                        .catch(err => console.log(err))
-                })
-        })
-        .catch(err => console.log(err)));
+    event.respondWith(caches.match(event.request, {
+        ignoreSearch: true,
+    }).then((response) => {
+        if (response) return response;
+        return fetch(event.request);
+    }))
 });
